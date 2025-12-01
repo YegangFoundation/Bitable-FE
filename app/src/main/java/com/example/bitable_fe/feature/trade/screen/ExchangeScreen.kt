@@ -20,16 +20,16 @@ import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
 fun ExchangeScreen(
     onCoinClick: (String) -> Unit,
     onHomeClick: () -> Unit,
-    onTradeClick: () -> Unit,
+    onInvestClick: () -> Unit,
     onSettingClick: () -> Unit
 ) {
     Scaffold(
         topBar = { ExchangeTopBar() },
         bottomBar = { BottomBar(
-            selectedTab = 1,
+            selectedTab = 0,
             onHomeClick = onHomeClick,
             onSettingClick = onSettingClick,
-            onTradeClick = onTradeClick
+            onInvestClick = onInvestClick
         ) },
         floatingActionButton = { VoiceFloatingButton() }
     ) { padding ->
@@ -51,5 +51,5 @@ fun ExchangeScreen(
 @Preview
 @Composable
 private fun ExchangeScreenPreview(){
-    ExchangeScreen()
+    ExchangeScreen({}, {}, {}, {})
 }

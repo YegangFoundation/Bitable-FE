@@ -5,6 +5,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ChartPeriodTabs(
@@ -21,7 +22,8 @@ fun ChartPeriodTabs(
                 text = {
                     Text(
                         text,
-                        fontWeight = if (selectedIndex == i) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (selectedIndex == i) FontWeight.Bold else FontWeight.Normal,
+                        fontSize = 20.sp
                     )
                 }
             )

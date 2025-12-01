@@ -20,9 +20,9 @@ fun SearchBar() {
         placeholder = { Text("코인 이름 또는 심볼 검색") },
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .height(72.dp),
         shape = RoundedCornerShape(8.dp),
-        trailingIcon = {
+        leadingIcon = {
             Icon(Icons.Default.Search, contentDescription = "Search")
         }
     )

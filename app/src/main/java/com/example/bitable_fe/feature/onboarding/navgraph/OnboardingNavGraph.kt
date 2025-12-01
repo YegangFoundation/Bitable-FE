@@ -12,20 +12,22 @@ import com.example.bitable_fe.feature.onboarding.screen.VoiceSpeedSettingScreen
 fun NavGraphBuilder.onboardingNavGraph(
     navController: NavController,
     navigator: OnboardingNavigator
-){
+) {
     composable<OnboardingRoute.SplashRoute> {
-        SplashScreen()
+        SplashScreen(
+            onNext = { navController.navigate(OnboardingRoute.LoginRoute) }
+        )
     }
 
     composable<OnboardingRoute.LoginRoute> {
         LoginScreen {
-            navController.navigate(OnboardingRoute.VoiceSpeedSettingRoute)
+            navController.navigate(OnboardingRoute.VoiceSpeedSettingRoute())
         }
     }
 
     composable<OnboardingRoute.VoiceSpeedSettingRoute> {
         VoiceSpeedSettingScreen {
-            navController.navigate(OnboardingRoute.VoiceInformationAmountSettingRoute)
+            navController.navigate(OnboardingRoute.VoiceInformationAmountSettingRoute())
         }
     }
 

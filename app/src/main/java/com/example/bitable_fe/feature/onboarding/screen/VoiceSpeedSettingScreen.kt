@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,10 +38,12 @@ fun VoiceSpeedSettingScreen(modifier: Modifier = Modifier, currentSpeed: Float =
     var speed by remember { mutableStateOf(currentSpeed) }
 
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.weight(0.5f))
         Text(
             text = "음성 속도 설정",
             fontSize = 32.sp,
@@ -74,22 +77,28 @@ fun VoiceSpeedSettingScreen(modifier: Modifier = Modifier, currentSpeed: Float =
             }
 
         }
+        Spacer(modifier = Modifier.height(80.dp))
         Slider(
             value = speed,
             onValueChange = {speed = it},
             valueRange = 0.5f..2.0f,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp),
             colors = SliderDefaults.colors(
                 thumbColor = Color(0xFF6B7583)
             )
         )
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 30.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("느리게", fontSize = 24.sp, color = Color.Gray)
             Text("빠르게", fontSize = 24.sp, color = Color.Gray)
         }
+        Spacer(modifier = Modifier.weight(1f))
         Button(
             onClick = onNextClicked,
             modifier = Modifier
@@ -98,7 +107,7 @@ fun VoiceSpeedSettingScreen(modifier: Modifier = Modifier, currentSpeed: Float =
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0x3181F4)
+                containerColor = Color(0xFF3181F4)
             )
         ) {
             Text("다음", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)

@@ -45,20 +45,23 @@ fun CoinRow(item: CoinItem, onItemClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.name, fontWeight = FontWeight.Bold)
-            Text(item.pair, color = Color.Gray, fontSize = 13.sp)
+            Text(item.name, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
+            Text(item.pair, color = Color.Gray, fontSize = 20.sp)
+            Text("거래 대금: 999,999백만", color = Color.Gray, fontSize = 20.sp)
         }
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
                 item.price,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0052FF)
+                color = Color(0xFF0052FF),
+                fontSize = 24.sp
             )
             Text(
                 item.changeRate,
-                color = if (item.isPositive) Color(0xFFE53935) else Color(0xFF2196F3),
-                fontWeight = FontWeight.Medium
+                color = if (item.isPositive) Color(0xFFD73D4A) else Color(0xFF3181F4),
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
             )
         }
     }

@@ -1,43 +1,59 @@
 package com.example.bitable_fe.feature.trade.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.bitable_fe.core.data.model.Coin
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.feature.trade.screen.component.BottomTradeButtons
 import com.example.bitable_fe.feature.trade.screen.component.ChartPeriodTabs
-import com.example.bitable_fe.feature.trade.screen.component.PriceInfoList
 import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
+import com.example.bitable_fe.feature.trade.viewmodel.CoinDetailViewModel
 
 @Composable
 fun CoinDetailScreen(
     coinName: String,
+    coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
     onListenSummaryClick: () -> Unit = {},
     onSellClick: () -> Unit = {},
     onBuyClick: () -> Unit = {}
 ) {
+    val period = coinDetailViewModel.period
+    var isFavorite by remember { mutableStateOf(false) }
+
     Scaffold(
-        floatingActionButton = {
-            VoiceFloatingButton()
+        topBar = {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "코인정보",
+                    fontSize = 20.sp,
+                    color = Color(0xFF1A1E27),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         },
+        floatingActionButton = { VoiceFloatingButton() },
         bottomBar = {
             BottomTradeButtons(
                 onSellClick = onSellClick,
@@ -45,6 +61,7 @@ fun CoinDetailScreen(
             )
         }
     ) { padding ->
+
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
@@ -53,31 +70,51 @@ fun CoinDetailScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
 
-            // ▣ 상단 제목
+            // ▣ 제목 + 하트
             item {
                 Column {
-                    Text("코인정보", fontSize = 14.sp, color = Color.Gray)
-                    Text("엑스알피(리플)", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                    Text("XRP/KRW", fontSize = 16.sp, color = Color.Gray)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("엑스알피(리플)", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                            Text("XRP/KRW", fontSize = 22.sp, color = Color.Gray)
+                        }
+
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (isFavorite) Color(0xFFFF3A5F) else Color.Gray,
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(CircleShape)
+                                .clickable { isFavorite = !isFavorite }
+                        )
+                    }
                 }
             }
 
             // ▣ 기간 탭
             item {
-                ChartPeriodTabs()
+                ChartPeriodTabs(
+                    selectedIndex = period,
+                    onSelectedChange = { coinDetailViewModel.setPeriodTab(it) }
+                )
             }
 
-            // ▣ 차트 (임시 UI 박스)
+            // ▣ 차트
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
+                        .height(200.dp)
                         .background(Color(0xFFEAF0FF), RoundedCornerShape(12.dp))
                 )
             }
 
-            // ▣ “차트 요약 듣기” 버튼
+            // ▣ 차트 요약
             item {
                 Button(
                     onClick = onListenSummaryClick,
@@ -89,13 +126,155 @@ fun CoinDetailScreen(
                 }
             }
 
-            // ▣ 현재가 ~ 실시간 거래량 정보 리스트
+            // ▣ 가격 정보 리스트 (이 항목들만 회색 박스 적용)
             item {
                 PriceInfoList()
             }
 
-            // 하단 버튼 공간 확보
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+            item { Spacer(Modifier.height(80.dp)) }
         }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 🔽 회색 박스 구분용 UI
+////////////////////////////////////////////////////////////////////////////////
+
+@Composable
+fun SectionItemBox(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color(0xFFF6F7F9), RoundedCornerShape(12.dp))
+            .padding(16.dp),
+        content = content
+    )
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 🔽 가격 정보 리스트 (차트 아래 항목들만 회색 박스로 분리)
+////////////////////////////////////////////////////////////////////////////////
+
+@Composable
+fun PriceInfoList() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+
+        SectionItemBox {
+            PriceRow(
+                title = "현재가",
+                value = "126,962,000",
+                rate = "-0.34%"
+            )
+        }
+
+        SectionItemBox {
+            PriceRow(
+                title = "24h 변동률",
+                value = "32%",
+                rate = "-0.34%"
+            )
+        }
+
+        SectionItemBox {
+            PriceRow(
+                title = "당일 고가",
+                value = "129,000,000",
+                rate = "1.55%",
+                up = true
+            )
+            Spacer(Modifier.height(8.dp))
+            PriceRow(
+                title = "당일 저가",
+                value = "126,063,000",
+                rate = "-1.55%"
+            )
+        }
+
+        SectionItemBox {
+            PriceRowOnlyText(
+                title = "실시간 거래량",
+                value = "83,164.709 ETH"
+            )
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 🔽 가격 row UI
+////////////////////////////////////////////////////////////////////////////////
+
+@Composable
+fun PriceRow(
+    title: String,
+    value: String,
+    rate: String,
+    up: Boolean = false
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+
+        Text(
+            text = title,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1A1E27)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            Text(
+                text = value,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A1E27)
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = rate,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (up) Color(0xFFFF3A5F) else Color(0xFF0085FF)
+                )
+
+                Spacer(Modifier.width(4.dp))
+
+                Text(
+                    text = if (up) "▲" else "▼",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (up) Color(0xFFFF3A5F) else Color(0xFF0085FF)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PriceRowOnlyText(
+    title: String,
+    value: String
+) {
+    Column {
+        Text(title, fontSize = 16.sp, color = Color(0xFF6B7583))
+        Text(
+            value,
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 4.dp)
+        )
     }
 }

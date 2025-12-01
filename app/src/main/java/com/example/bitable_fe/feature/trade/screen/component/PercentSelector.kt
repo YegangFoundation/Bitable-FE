@@ -10,11 +10,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 
 @Composable
 fun PercentSelector(
@@ -22,19 +24,24 @@ fun PercentSelector(
     onSelect: (String) -> Unit
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
         percentages.forEach { text ->
             Box(
-                modifier = Modifier.run {
-                    clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFFF2F3F5))
-                                .clickable { onSelect(text) }
-                                .padding(horizontal = 14.dp, vertical = 8.dp)
-                },
+                modifier = Modifier
+                    .weight(1f) // ← 버튼 너비 균등 분배
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF2F3F5))
+                    .clickable { onSelect(text) }
+                    .padding(vertical = 10.dp), // 높이를 살짝 늘려줌
+                contentAlignment = Alignment.Center
             ) {
-                Text(text, fontSize = 14.sp)
+                Text(
+                    text,
+                    fontSize = 14.sp,
+                    color = Color(0xFF1A1E27)
+                )
             }
         }
     }

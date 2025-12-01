@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -33,11 +35,12 @@ fun TradeNumberPad(onClick: (String) -> Unit) {
                 row.forEach { key ->
                     Box(
                         modifier = Modifier
-                            .size(96.dp)
+                            .width(120.dp)
+                            .height(56.dp)
                             .clickable { onClick(key) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(key, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(key, fontSize = 36.sp)
                     }
                 }
             }

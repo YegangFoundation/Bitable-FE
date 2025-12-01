@@ -5,8 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.bitable_fe.app.navigation.navigator.OnboardingNavigatorImpl
+import com.example.bitable_fe.app.navigation.navigator.TradeNavigatorImpl
 import com.example.bitable_fe.feature.onboarding.navgraph.OnboardingRoute
 import com.example.bitable_fe.feature.onboarding.navgraph.onboardingNavGraph
+import com.example.bitable_fe.feature.trade.navgraph.tradeNavGraph
 
 @Composable
 fun NavGraph(
@@ -21,6 +23,11 @@ fun NavGraph(
         onboardingNavGraph(
             navController = navController,
             navigator = OnboardingNavigatorImpl(navController)
+        )
+
+        tradeNavGraph(
+            navController = navController,
+            navigator = TradeNavigatorImpl(navController)
         )
     }
 }
