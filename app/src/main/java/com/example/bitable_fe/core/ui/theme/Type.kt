@@ -1,4 +1,4 @@
-package com.example.bitable_fe.ui.theme
+package com.example.bitable_fe.core.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

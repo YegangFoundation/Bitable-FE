@@ -26,15 +26,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bitable_fe.core.data.model.VoiceOption
 import com.example.bitable_fe.feature.onboarding.screen.component.InfoCard
-import com.example.bitable_fe.ui.theme.CustomTypography
+import com.example.bitable_fe.core.ui.theme.CustomTypography
 
 @Composable
-fun VoiceInformationAmountSettingScreen(onClick: () -> Unit) {
+fun VoiceInformationAmountSettingScreen(initialOption: VoiceOption = VoiceOption.DETAIL, onClick: () -> Unit) {
     val backgroundColor = Color(0xFFF7F8FA)
 
     // **선택 상태 (Bool state) 저장**
     // 선택된 옵션을 저장하는 mutable state를 선언합니다. 초기값은 상세형으로 설정했습니다.
-    var selectedOption by remember { mutableStateOf(VoiceOption.DETAIL) } // Boolean 대신 Enum을 사용하여 어떤 카드가 선택되었는지 명확하게 표현합니다.
+    var selectedOption by remember(initialOption) { mutableStateOf(initialOption) } // Boolean 대신 Enum을 사용하여 어떤 카드가 선택되었는지 명확하게 표현합니다.
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
