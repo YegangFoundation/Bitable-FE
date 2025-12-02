@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,24 +21,31 @@ fun TradeNumberPad(onClick: (String) -> Unit) {
         listOf("1", "2", "3"),
         listOf("4", "5", "6"),
         listOf("7", "8", "9"),
-        listOf("00", "0", "⌫")
+        listOf("00", "0", "←")
     )
 
-    Column {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         keys.forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 row.forEach { key ->
                     Box(
                         modifier = Modifier
-                            .width(120.dp)
-                            .height(56.dp)
+                            .weight(1f)
+                            .height(70.dp)
                             .clickable { onClick(key) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(key, fontSize = 36.sp)
+                        Text(
+                            text = key,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }
