@@ -36,7 +36,7 @@ import com.example.bitable_fe.core.network.api.TransactionApi
 import com.example.bitable_fe.core.network.api.UserApi
 import com.example.bitable_fe.core.network.api.VoiceApi
 import dagger.Module
-import dagger.Binds
+import dagger.Provides
 import javax.inject.Singleton
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
@@ -45,62 +45,62 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
-    @Binds
+    @Provides
     @Singleton
     fun provideUserRepository(api: UserApi): UserRepository =
         UserRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideAccountRepository(api: AccountApi): AccountRepository =
         AccountRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideBankRepository(api: BankApi): BankRepository =
         BankRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideCoinRepository(api: CoinApi): CoinRepository =
         CoinRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideOrderRepository(api: OrderApi): OrderRepository =
         OrderRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideHoldingsRepository(api: PortfolioApi): HoldingsRepository =
         HoldingsRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideTransactionRepository(api: TransactionApi): TransactionRepository =
         TransactionRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun providePortfolioRepository(api: PortfolioApi): PortfolioRepository =
         PortfolioRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideChartRepository(api: ChartApi): ChartRepository =
         ChartRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideMarketRepository(api: MarketApi): MarketRepository =
         MarketRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideAlertRepository(api: AlertApi): AlertRepository =
         AlertRepositoryImpl(api)
 
-    @Binds
+    @Provides
     @Singleton
     fun provideVoiceRepository(api: VoiceApi): VoiceRepository =
         VoiceRepositoryImpl(api)

@@ -20,10 +20,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.bitable_fe.core.network.response.MarketData
+import com.example.bitable_fe.core.ui.state.CoinDetailState
+import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
 import com.example.bitable_fe.feature.trade.screen.component.BottomTradeButtons
 import com.example.bitable_fe.feature.trade.screen.component.ChartPeriodTabs
 import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
-import com.example.bitable_fe.feature.trade.viewmodel.CoinDetailViewModel
 
 @Composable
 fun CoinDetailScreen(
@@ -35,6 +37,12 @@ fun CoinDetailScreen(
 ) {
     val period = coinDetailViewModel.period
     var isFavorite by remember { mutableStateOf(false) }
+
+    LaunchedEffect(coinName) {
+        coinDetailViewModel.loadTicker(coinName)
+    }
+
+    val uiState by coinDetailViewModel.tickerState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -62,79 +70,96 @@ fun CoinDetailScreen(
         }
     ) { padding ->
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
+        when (uiState) {
+            is CoinDetailState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
 
-            // ▣ 제목 + 하트
-            item {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text("엑스알피(리플)", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                            Text("XRP/KRW", fontSize = 22.sp, color = Color.Gray)
+            is CoinDetailState.Error -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("데이터 로딩 실패 😢")
+                }
+            }
+
+            is CoinDetailState.Success -> {
+                val ticker = (uiState as CoinDetailState.Success).data
+
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(padding)
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(20.dp)
+                ) {
+
+                    // ▣ 제목 + 하트
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(ticker.market.split("-")[0], fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                                Text(ticker.market, fontSize = 22.sp, color = Color.Gray)
+                            }
+
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                contentDescription = null,
+                                tint = if (isFavorite) Color(0xFFFF3A5F) else Color.Gray,
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .clickable { isFavorite = !isFavorite }
+                            )
                         }
+                    }
 
-                        Icon(
-                            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = null,
-                            tint = if (isFavorite) Color(0xFFFF3A5F) else Color.Gray,
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .clickable { isFavorite = !isFavorite }
+                    // ▣ 기간 탭
+                    item {
+                        ChartPeriodTabs(
+                            selectedIndex = period,
+                            onSelectedChange = { coinDetailViewModel.setPeriodTab(it) }
                         )
                     }
+
+                    // ▣ 차트 영역(임시)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .background(Color(0xFFEAF0FF), RoundedCornerShape(12.dp))
+                        )
+                    }
+
+                    // ▣ 차트 요약 버튼
+                    item {
+                        Button(
+                            onClick = onListenSummaryClick,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text("차트 요약 듣기", color = Color.White, fontSize = 18.sp)
+                        }
+                    }
+
+                    // ▣ 가격 정보 리스트 — 실제 데이터 연결됨
+                    item {
+                        PriceInfoList(ticker)
+                    }
+
+                    item { Spacer(Modifier.height(80.dp)) }
                 }
             }
-
-            // ▣ 기간 탭
-            item {
-                ChartPeriodTabs(
-                    selectedIndex = period,
-                    onSelectedChange = { coinDetailViewModel.setPeriodTab(it) }
-                )
-            }
-
-            // ▣ 차트
-            item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .background(Color(0xFFEAF0FF), RoundedCornerShape(12.dp))
-                )
-            }
-
-            // ▣ 차트 요약
-            item {
-                Button(
-                    onClick = onListenSummaryClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("차트 요약 듣기", color = Color.White, fontSize = 18.sp)
-                }
-            }
-
-            // ▣ 가격 정보 리스트 (이 항목들만 회색 박스 적용)
-            item {
-                PriceInfoList()
-            }
-
-            item { Spacer(Modifier.height(80.dp)) }
         }
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // 🔽 회색 박스 구분용 UI
@@ -159,50 +184,55 @@ fun SectionItemBox(
 ////////////////////////////////////////////////////////////////////////////////
 
 @Composable
-fun PriceInfoList() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
+fun PriceInfoList(ticker: MarketData) {
+    val changeRate = ticker.change_rate * 100
+    val isUp = changeRate >= 0
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
         SectionItemBox {
             PriceRow(
                 title = "현재가",
-                value = "126,962,000",
-                rate = "-0.34%"
+                value = "%,d".format(ticker.trade_price.toInt()),
+                rate = String.format("%.2f%%", changeRate),
+                up = isUp
             )
         }
 
         SectionItemBox {
             PriceRow(
                 title = "24h 변동률",
-                value = "32%",
-                rate = "-0.34%"
+                value = String.format("%.2f%%", changeRate),
+                rate = "",
+                up = isUp
             )
         }
 
         SectionItemBox {
             PriceRow(
                 title = "당일 고가",
-                value = "129,000,000",
-                rate = "1.55%",
+                value = "%,d".format(ticker.high_price.toInt()),
+                rate = "",
                 up = true
             )
             Spacer(Modifier.height(8.dp))
             PriceRow(
                 title = "당일 저가",
-                value = "126,063,000",
-                rate = "-1.55%"
+                value = "%,d".format(ticker.low_price.toInt()),
+                rate = "",
+                up = false
             )
         }
 
         SectionItemBox {
             PriceRowOnlyText(
                 title = "실시간 거래량",
-                value = "83,164.709 ETH"
+                value = "%,.3f".format(ticker.trade_volume)
             )
         }
     }
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // 🔽 가격 row UI

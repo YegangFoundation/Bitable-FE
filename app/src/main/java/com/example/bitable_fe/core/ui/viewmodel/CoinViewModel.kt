@@ -16,16 +16,15 @@ class CoinViewModel @Inject constructor(
     private val repo: CoinRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow<CoinUiState>(CoinUiState.Idle)
+    private val _state = MutableStateFlow<CoinUiState<Any>>(CoinUiState.Idle)
     val state = _state.asStateFlow()
 
-
-    private fun emit(block: suspend () -> Any) {
+    private fun <T> emit(block: suspend () -> T) {
         viewModelScope.launch {
             _state.value = CoinUiState.Loading
             runCatching { block() }
-                .onSuccess { _state.value = CoinUiState.Success(it) }
-                .onFailure { _state.value = CoinUiState.Error(it.message ?: "error") }
+                .onSuccess { _state.value = CoinUiState.Success(it as Any) }
+                .onFailure { _state.value = CoinUiState.Error(it.message.orEmpty()) }
         }
     }
 

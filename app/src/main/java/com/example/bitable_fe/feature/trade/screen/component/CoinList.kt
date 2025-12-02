@@ -17,52 +17,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bitable_fe.core.data.model.CoinItem
+import com.example.bitable_fe.core.network.response.MarketData
 
 @Composable
-fun CoinList(onItemClick: (String) -> Unit) {
-    val items = listOf(
-        CoinItem("엑스알피(리플)", "XRP/KRW", "2,921", "-0.77%", false),
-        CoinItem("비트코인", "BTC/KRW", "126,962,000", "-0.77%", false),
-        CoinItem("플루이드", "FLUID/KRW", "6,190", "0.77%", true),
-        CoinItem("플루이드", "FLUID/KRW", "6,190", "0.77%", true)
-    )
-
+fun CoinList(
+    items: List<MarketData>,
+    onItemClick: (String) -> Unit
+) {
     LazyColumn {
         items(items) { item ->
-            CoinRow(item, { onItemClick(item.pair) })
+            CoinRow(item) { onItemClick(item.market) }
             HorizontalDivider()
         }
     }
 }
 
 @Composable
-fun CoinRow(item: CoinItem, onItemClick: () -> Unit) {
+fun CoinRow(
+    item: MarketData,
+    onClick: () -> Unit
+) {
+    // market = "XRP-KRW" → name = XRP, pair = KRW
+    val (symbol, currency) = item.market.split("-")
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 14.dp)
-            .clickable { onItemClick() },
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(item.name, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
-            Text(item.pair, color = Color.Gray, fontSize = 20.sp)
-            Text("거래 대금: 999,999백만", color = Color.Gray, fontSize = 20.sp)
+            Text(symbol, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Text("${symbol}/${currency}", color = Color.Gray, fontSize = 20.sp)
+
+            Text(
+                "거래 대금: ${"%,.0f".format(item.acc_trade_price_24h)}원",
+                color = Color.Gray,
+                fontSize = 16.sp
+            )
         }
 
         Column(horizontalAlignment = Alignment.End) {
             Text(
-                item.price,
+                "%,d".format(item.trade_price.toInt()),
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF0052FF),
                 fontSize = 24.sp
             )
+
+            val isPositive = item.change_rate >= 0
             Text(
-                item.changeRate,
-                color = if (item.isPositive) Color(0xFFD73D4A) else Color(0xFF3181F4),
+                String.format("%.2f%%", item.change_rate * 100),
                 fontWeight = FontWeight.Bold,
+                color = if (isPositive) Color(0xFFD73D4A) else Color(0xFF3181F4),
                 fontSize = 20.sp
             )
         }
     }
 }
+
