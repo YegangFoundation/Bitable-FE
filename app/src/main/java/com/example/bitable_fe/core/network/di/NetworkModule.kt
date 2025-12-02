@@ -1,7 +1,5 @@
 package com.example.bitable_fe.core.network.di
 
-
-
 import com.example.bitable_fe.core.network.api.*
 import dagger.Module
 import dagger.Provides
@@ -18,7 +16,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://52.79.xxx.xxx" // 서버 주소로 교체
+    private const val BASE_URL = "http://52.79.201.159" // 서버 주소
 
     @Provides
     @Singleton
@@ -31,7 +29,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
-            // interceptor, logging 추가 가능
+            // logging interceptor 등 추가 가능
             .build()
 
     @Provides
@@ -53,16 +51,42 @@ object NetworkModule {
         retrofit.create(UserApi::class.java)
 
     @Provides @Singleton
-    fun provideOrderApi(retrofit: Retrofit): OrderApi =
-        retrofit.create(OrderApi::class.java)
+    fun provideAccountApi(retrofit: Retrofit): AccountApi =
+        retrofit.create(AccountApi::class.java)
+
+    @Provides @Singleton
+    fun provideBankApi(retrofit: Retrofit): BankApi =
+        retrofit.create(BankApi::class.java)
 
     @Provides @Singleton
     fun provideCoinApi(retrofit: Retrofit): CoinApi =
         retrofit.create(CoinApi::class.java)
 
     @Provides @Singleton
+    fun provideOrderApi(retrofit: Retrofit): OrderApi =
+        retrofit.create(OrderApi::class.java)
+
+    @Provides @Singleton
+    fun provideTransactionApi(retrofit: Retrofit): TransactionApi =
+        retrofit.create(TransactionApi::class.java)
+
+    @Provides @Singleton
+    fun providePortfolioApi(retrofit: Retrofit): PortfolioApi =
+        retrofit.create(PortfolioApi::class.java)
+
+    @Provides @Singleton
+    fun provideAlertApi(retrofit: Retrofit): AlertApi =
+        retrofit.create(AlertApi::class.java)
+
+    @Provides @Singleton
+    fun provideMarketApi(retrofit: Retrofit): MarketApi =
+        retrofit.create(MarketApi::class.java)
+
+    @Provides @Singleton
+    fun provideChartApi(retrofit: Retrofit): ChartApi =
+        retrofit.create(ChartApi::class.java)
+
+    @Provides @Singleton
     fun provideVoiceApi(retrofit: Retrofit): VoiceApi =
         retrofit.create(VoiceApi::class.java)
-
-    // 필요하면 AccountApi, TransactionApi 등도 추가
 }

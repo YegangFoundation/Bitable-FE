@@ -4,10 +4,7 @@ import com.example.bitable_fe.core.network.request.BuyRequest
 import com.example.bitable_fe.core.network.request.SellRequest
 import com.example.bitable_fe.core.network.response.ApiResponse
 import com.example.bitable_fe.core.network.response.OrderResponse
-import retrofit2.http.Body
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface OrderApi {
 
@@ -22,11 +19,16 @@ interface OrderApi {
     ): ApiResponse<OrderResponse>
 
     @GET("/api/orders")
-    suspend fun getOrdersByAccount(
-        @Query("accountId") accountId: Long,
+    suspend fun getOrders(
+        @Query("accountId") accountId: Long? = null,
         @Query("symbol") symbol: String? = null,
         @Query("side") side: String? = null,
         @Query("startDate") startDate: String? = null,
         @Query("endDate") endDate: String? = null
     ): ApiResponse<List<OrderResponse>>
+
+    @GET("/api/orders/{orderId}")
+    suspend fun getOrder(
+        @Path("orderId") orderId: Long
+    ): ApiResponse<OrderResponse>
 }

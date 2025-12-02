@@ -8,3 +8,13 @@ data class CreateAccountRequest(
     val accountName: String,
     val initialBalance: Double? = null
 )
+@Serializable
+data class DepositWithdrawRequest(
+    val amount: Double,
+    val memo: String? = null
+)
+
+@Serializable
+data class ResetBalanceRequest(
+    val newBalance: Double
+)

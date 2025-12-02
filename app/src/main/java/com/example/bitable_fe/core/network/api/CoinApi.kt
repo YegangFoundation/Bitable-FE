@@ -1,12 +1,18 @@
+// core/network/api/CoinApi.kt
 package com.example.bitable_fe.core.network.api
 
+import com.example.bitable_fe.core.network.request.RegisterCoinRequest
 import com.example.bitable_fe.core.network.response.ApiResponse
 import com.example.bitable_fe.core.network.response.CoinResponse
 import com.example.bitable_fe.core.network.response.MarketData
-import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.*
 
 interface CoinApi {
+
+    @POST("/api/coins")
+    suspend fun registerCoin(
+        @Body request: RegisterCoinRequest
+    ): ApiResponse<CoinResponse>
 
     @GET("/api/coins")
     suspend fun getAllCoins(): ApiResponse<List<CoinResponse>>
@@ -23,4 +29,7 @@ interface CoinApi {
 
     @GET("/api/coins/markets")
     suspend fun getAllMarkets(): ApiResponse<List<MarketData>>
+
+    @POST("/api/coins/initialize")
+    suspend fun initializeCoins(): ApiResponse<Void?> // 서버 응답에 따라 조정
 }
