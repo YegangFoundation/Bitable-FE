@@ -14,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.ui.viewmodel.ProfitViewModel
 import com.example.bitable_fe.feature.invest.screen.component.ChartBox
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
 
 
 @Composable
@@ -47,127 +45,123 @@ fun ProfitScreen(
         vm.loadAll()
     }
 
-    Scaffold(
-        floatingActionButton = { VoiceFloatingButton() }
-    ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+
+        // ----------------------------------
+        // 제목
+        // ----------------------------------
+        Box(
+            Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
         ) {
+            Text("투자정보", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
 
-            // ----------------------------------
-            // 제목
-            // ----------------------------------
-            Box(
-                Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("투자정보", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            }
+        Spacer(Modifier.height(12.dp))
 
-            Spacer(Modifier.height(12.dp))
+        // ----------------------------------
+        // 상단 탭
+        // ----------------------------------
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Text("투자내역", color = Color.Gray)
+            Text("투자손익", color = Color(0xFF006AFF), fontWeight = FontWeight.Bold)
+            Text("입출금", color = Color.Gray)
+        }
 
-            // ----------------------------------
-            // 상단 탭
-            // ----------------------------------
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                Text("투자내역", color = Color.Gray)
-                Text("투자손익", color = Color(0xFF006AFF), fontWeight = FontWeight.Bold)
-                Text("입출금", color = Color.Gray)
-            }
+        Divider(color = Color(0xFF006AFF), thickness = 2.dp)
 
-            Divider(color = Color(0xFF006AFF), thickness = 2.dp)
+        Spacer(Modifier.height(16.dp))
 
-            Spacer(Modifier.height(16.dp))
-
-            // ----------------------------------
-            // 기간 탭
-            // ----------------------------------
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                listOf("일", "주", "월").forEach {
-                    Text(
-                        text = it,
-                        color = if (period == it) Color.Black else Color.Gray,
-                        fontSize = 16.sp,
-                        modifier = Modifier.clickable {
-                            vm.setPeriod(it)
-                            vm.generateDummyChart()
-                        }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            // ----------------------------------
-            // 그래프 (더미 + API 반응형)
-            // ----------------------------------
-            ChartBox(chart)
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = onListenClick,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
-                shape = RoundedCornerShape(10.dp)
-            ) {
-                Text("손익 리포트 요약 듣기", color = Color.White)
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            Divider(color = Color.LightGray, thickness = 1.dp)
-
-            Spacer(Modifier.height(20.dp))
-
-            // ----------------------------------
-            // 기간 누적 손익
-            // ----------------------------------
-            summary?.let { s ->
-                Column {
-                    Text("기간 누적 손익", fontSize = 16.sp, color = Color.Gray)
-
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            "${s.profitLossKrw.toInt()}",
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            String.format("%.2f%%", s.profitLossRate),
-                            color = if (s.profitLossRate >= 0) Color(0xFF3181F4) else Color.Red,
-                            fontSize = 20.sp
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            // ----------------------------------
-            // 기간 평균 투자금액
-            // ----------------------------------
-            Column {
-                Text("기간 평균 투자금액", fontSize = 16.sp, color = Color.Gray)
+        // ----------------------------------
+        // 기간 탭
+        // ----------------------------------
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            modifier = Modifier.padding(start = 8.dp)
+        ) {
+            listOf("일", "주", "월").forEach {
                 Text(
-                    avgInvest.toInt().toString(),
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
+                    text = it,
+                    color = if (period == it) Color.Black else Color.Gray,
+                    fontSize = 16.sp,
+                    modifier = Modifier.clickable {
+                        vm.setPeriod(it)
+                        vm.generateDummyChart()
+                    }
                 )
             }
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        // ----------------------------------
+        // 그래프 (더미 + API 반응형)
+        // ----------------------------------
+        ChartBox(chart)
+
+        Spacer(Modifier.height(16.dp))
+
+        Button(
+            onClick = onListenClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
+            shape = RoundedCornerShape(10.dp)
+        ) {
+            Text("손익 리포트 요약 듣기", color = Color.White)
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Divider(color = Color.LightGray, thickness = 1.dp)
+
+        Spacer(Modifier.height(20.dp))
+
+        // ----------------------------------
+        // 기간 누적 손익
+        // ----------------------------------
+        summary?.let { s ->
+            Column {
+                Text("기간 누적 손익", fontSize = 16.sp, color = Color.Gray)
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "${s.profitLossKrw.toInt()}",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        String.format("%.2f%%", s.profitLossRate),
+                        color = if (s.profitLossRate >= 0) Color(0xFF3181F4) else Color.Red,
+                        fontSize = 20.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // ----------------------------------
+        // 기간 평균 투자금액
+        // ----------------------------------
+        Column {
+            Text("기간 평균 투자금액", fontSize = 16.sp, color = Color.Gray)
+            Text(
+                avgInvest.toInt().toString(),
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
+
 }

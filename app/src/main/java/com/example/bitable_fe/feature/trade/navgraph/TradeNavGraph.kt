@@ -52,7 +52,7 @@ fun NavGraphBuilder.tradeNavGraph(
         val args = backStackEntry.toRoute<TradeRoute.BuyRoute>()
 
         BuyScreen(
-            coinName = args.coinName
+            symbol = args.coinName
         )
     }
 
@@ -60,7 +60,7 @@ fun NavGraphBuilder.tradeNavGraph(
         val args = backStackEntry.toRoute<TradeRoute.SellRoute>()
 
         SellScreen(
-            coinName = args.coinName
+            symbol = args.coinName
         )
     }
 

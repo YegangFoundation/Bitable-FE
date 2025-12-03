@@ -26,48 +26,44 @@ import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
 @Composable
 fun DepositAmountScreen(
     vm: DepositViewModel = hiltViewModel(),
-    onDeposit: () -> Unit
+    onDeposit: (String) -> Unit
 ) {
     val account by vm.account.collectAsState()
     val amount by vm.amount.collectAsState()
 
-    Scaffold(
-        floatingActionButton = { VoiceFloatingButton() }
-    ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+    ) {
+
+        Text("계좌", fontSize = 20.sp, color = Color.Gray)
+        Text(
+            "${account?.accountName} ${account?.accountId}",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 20.dp)
+        )
+
+        Text("금액", fontSize = 18.sp, color = Color.Gray)
+        Text("$amount KRW", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+
+        Spacer(Modifier.height(24.dp))
+
+        TradeNumberPad { key ->
+            vm.onKeyClicked(key)
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Button(
+            onClick = { vm.requestDeposit({ onDeposit(amount) }) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
         ) {
-
-            Text("계좌", fontSize = 20.sp, color = Color.Gray)
-            Text(
-                "${account?.accountName} ${account?.accountId}",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
-
-            Text("금액", fontSize = 18.sp, color = Color.Gray)
-            Text("${amount} KRW", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-
-            Spacer(Modifier.height(24.dp))
-
-            TradeNumberPad { key ->
-                vm.onKeyClicked(key)
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            Button(
-                onClick = { vm.requestDeposit(onDeposit) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
-            ) {
-                Text("입금", fontSize = 20.sp, color = Color.White)
-            }
+            Text("입금", fontSize = 20.sp, color = Color.White)
         }
     }
+
 }

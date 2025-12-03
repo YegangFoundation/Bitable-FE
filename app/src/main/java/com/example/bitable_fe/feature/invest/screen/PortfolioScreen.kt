@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.bitable_fe.core.ui.component.BottomBar
 import com.example.bitable_fe.core.ui.viewmodel.PortfolioViewModel
 import com.example.bitable_fe.feature.invest.screen.component.PieChart
 import com.example.bitable_fe.feature.invest.screen.component.PortfolioHoldingRow
@@ -37,101 +38,64 @@ fun PortfolioScreen(
     vm: PortfolioViewModel = hiltViewModel(),
     onListenSummary: () -> Unit = {}
 ) {
-    val loading by remember { vm::loading }
     val summary by remember { vm::summary }
     val holdings by remember { vm::holdings }
-    val error by remember { vm::error }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("투자정보", fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-            )
-        }
-    ) { padding ->
 
-        if (loading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-            return@Scaffold
-        }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
 
-        if (error != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("오류 발생: $error", color = Color.Red)
-            }
-            return@Scaffold
-        }
-
-        if (summary == null) return@Scaffold
-
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-
-            // 총 보유 자산
-            item {
-                Column {
-                    Text("총 보유 자산", fontSize = 18.sp, color = Color.Gray)
-                    Text(
-                        summary!!.totalBalanceKrw.toInt().toString(),
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Button(
-                        onClick = onListenSummary,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
-                    ) {
-                        Text("투자 내역 요약 듣기", color = Color.White, fontSize = 18.sp)
-                    }
-                }
-            }
-
-            // 총 매수 / 평가 / 손익 / 수익률
-            item {
-                PortfolioSummaryCard(summary = summary!!)
-            }
-
-            // 파이 차트
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
+        // 총 보유 자산
+        item {
+            Column {
+                Text("총 보유 자산", fontSize = 18.sp, color = Color.Gray)
+                Text(
+                    summary!!.totalBalanceKrw.toInt().toString(),
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Button(
+                    onClick = onListenSummary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
                 ) {
-                    Text("보유자산 포트폴리오", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(16.dp))
-
-                    PieChart(
-                        data = holdings.map { it.quantity * it.currentPrice },
-                        labels = holdings.map { it.symbol }
-                    )
+                    Text("투자 내역 요약 듣기", color = Color.White, fontSize = 18.sp)
                 }
             }
-
-            // 보유자산 리스트
-            items(holdings) { h ->
-                PortfolioHoldingRow(h)
-            }
-
-            item { Spacer(Modifier.height(40.dp)) }
         }
+
+        // 총 매수 / 평가 / 손익 / 수익률
+        item {
+            PortfolioSummaryCard(summary = summary!!)
+        }
+
+        // 파이 차트
+        item {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("보유자산 포트폴리오", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(16.dp))
+
+                PieChart(
+                    data = holdings.map { it.quantity * it.currentPrice },
+                    labels = holdings.map { it.symbol }
+                )
+            }
+        }
+
+        // 보유자산 리스트
+        items(holdings) { h ->
+            PortfolioHoldingRow(h)
+        }
+
+        item { Spacer(Modifier.height(40.dp)) }
     }
 }

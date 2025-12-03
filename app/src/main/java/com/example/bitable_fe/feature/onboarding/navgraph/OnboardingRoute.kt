@@ -5,18 +5,18 @@ import kotlinx.serialization.Serializable
 
 sealed interface OnboardingRoute {
     @Serializable
-    data object SplashRoute
+    data object SplashRoute : OnboardingRoute
 
     @Serializable
-    data object LoginRoute
+    data object LoginRoute : OnboardingRoute
 
     @Serializable
     data class VoiceSpeedSettingRoute(
         val speed: Float = 1.0F
-    )
+    ) : OnboardingRoute
 
     @Serializable
     data class VoiceInformationAmountSettingRoute(
         val initialOption: VoiceOption = VoiceOption.DETAIL
-    )
+    ) : OnboardingRoute
 }
