@@ -1,8 +1,8 @@
 package com.example.bitable_fe.core.ui.state
 
-sealed class HoldingsUiState {
-    object Idle : HoldingsUiState()
-    object Loading : HoldingsUiState()
-    data class Success(val data: Any) : HoldingsUiState()
-    data class Error(val msg: String) : HoldingsUiState()
+sealed class HoldingsUiState<out T> {
+    object Idle : HoldingsUiState<Nothing>()
+    object Loading : HoldingsUiState<Nothing>()
+    data class Success<T>(val data: T) : HoldingsUiState<T>()
+    data class Error(val msg: String) : HoldingsUiState<Nothing>()
 }
