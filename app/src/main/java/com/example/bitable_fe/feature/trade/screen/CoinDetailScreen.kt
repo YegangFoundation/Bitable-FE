@@ -25,7 +25,7 @@ import com.example.bitable_fe.core.ui.state.CoinDetailState
 import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
 import com.example.bitable_fe.feature.trade.screen.component.BottomTradeButtons
 import com.example.bitable_fe.feature.trade.screen.component.ChartPeriodTabs
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 
 @Composable
 fun CoinDetailScreen(

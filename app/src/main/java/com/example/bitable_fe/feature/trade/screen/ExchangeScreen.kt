@@ -22,7 +22,7 @@ import com.example.bitable_fe.feature.trade.screen.component.CoinList
 import com.example.bitable_fe.feature.trade.screen.component.ExchangeTopBar
 import com.example.bitable_fe.feature.trade.screen.component.MarketTabRow
 import com.example.bitable_fe.feature.trade.screen.component.SearchBar
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 
 @Composable
 fun ExchangeScreen(

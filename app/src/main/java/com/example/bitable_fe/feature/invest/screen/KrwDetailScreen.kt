@@ -16,7 +16,6 @@ import com.example.bitable_fe.core.network.response.AccountInfo
 import com.example.bitable_fe.core.network.response.TransactionResponse
 import com.example.bitable_fe.core.ui.state.AccountUiState
 import com.example.bitable_fe.core.ui.viewmodel.DepositViewModel
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
 
 @Composable
 fun KrwDetailScreen(

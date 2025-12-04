@@ -11,7 +11,7 @@ import androidx.navigation.toRoute
 import com.example.bitable_fe.core.navigation.InvestNavigator
 import com.example.bitable_fe.core.ui.component.BottomBar
 import com.example.bitable_fe.feature.invest.screen.component.InvestTopBar
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 
 @Composable
 fun InvestHostScreen(navigator: InvestNavigator) {

@@ -9,7 +9,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,6 +31,20 @@ class VoiceViewModel @Inject constructor(
 
     fun tts(text: String) =
         emit { repo.tts(text) }
+
+    fun sendRecordedAudio(userId: Long, file: File) {
+        viewModelScope.launch {
+            _state.value = VoiceUiState.Loading
+
+            val requestFile = file.asRequestBody("audio/mp4".toMediaType())
+            val part = MultipartBody.Part.createFormData("audio", file.name, requestFile)
+
+            runCatching { repo.uploadAudio(userId, part) }
+                .onSuccess { _state.value = VoiceUiState.Success(it) }
+                .onFailure { _state.value = VoiceUiState.Error(it.message ?: "녹음 업로드 실패") }
+        }
+    }
+
 
     private fun emit(block: suspend () -> Any) {
         viewModelScope.launch {

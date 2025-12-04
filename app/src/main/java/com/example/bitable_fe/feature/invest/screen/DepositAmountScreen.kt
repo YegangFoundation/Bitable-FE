@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -21,7 +20,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.ui.viewmodel.DepositViewModel
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
-import com.example.bitable_fe.feature.trade.screen.component.VoiceFloatingButton
 
 @Composable
 fun DepositAmountScreen(
