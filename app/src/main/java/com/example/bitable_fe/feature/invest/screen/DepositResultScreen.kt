@@ -31,44 +31,44 @@ fun DepositResultScreen(
     amount: Long,
     onConfirm: () -> Unit
 ) {
-    Scaffold(
-        floatingActionButton = { VoiceFloatingButton() }
-    ) { padding ->
 
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "입금",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = null,
+            tint = Color(0xFF006AFF),
+            modifier = Modifier.size(120.dp)
+        )
+
+        Text(
+            "$amount KRW \n입금완료",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 20.dp)
+        )
+
+        Spacer(Modifier.height(50.dp))
+
+        Button(
+            onClick = onConfirm,
             modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
         ) {
-
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = Color(0xFF006AFF),
-                modifier = Modifier.size(100.dp)
-            )
-
-            Text(
-                "$amount KRW 입금완료",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 20.dp)
-            )
-
-            Spacer(Modifier.height(50.dp))
-
-            Button(
-                onClick = onConfirm,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(Color(0xFF006AFF))
-            ) {
-                Text("확인", color = Color.White)
-            }
+            Text("확인", color = Color.White)
         }
+
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,8 +24,13 @@ fun CustomizeReadingScreen(
         modifier = Modifier
             .padding(16.dp)
     ) {
-
-        Text("읽기 항목 커스터마이즈", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(bottom = 13.dp)
+        ) {
+            Text("읽기 항목 커스터마이즈", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        }
 
         Spacer(Modifier.height(24.dp))
 

@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,9 +34,13 @@ fun InfoLevelSettingScreen(
         modifier = Modifier
             .padding(16.dp)
     ) {
-
-        Text("음성 정보 단계", fontSize = 22.sp, fontWeight = FontWeight.Bold)
-
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(bottom = 13.dp)
+        ) {
+            Text("음성 정보 단계", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        }
         Spacer(Modifier.height(24.dp))
 
         listOf(
@@ -48,11 +54,13 @@ fun InfoLevelSettingScreen(
                     .padding(vertical = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(label, fontSize = 20.sp)
                 RadioButton(
                     selected = (infoLevel == level),
-                    onClick = { vm.setInfoLevel(level) }
+                    onClick = { vm.setInfoLevel(level) },
+                    modifier = Modifier.size(24.dp)
                 )
+
+                Text(label, fontSize = 20.sp)
             }
         }
     }

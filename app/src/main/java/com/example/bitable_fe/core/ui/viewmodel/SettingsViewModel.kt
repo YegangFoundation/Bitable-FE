@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.bitable_fe.core.data.datastore.UserPreferencesDataStore
 import com.example.bitable_fe.core.data.repository.iface.UserRepository
 import com.example.bitable_fe.core.network.request.UpdateSettingsRequest
+import com.example.bitable_fe.core.network.response.UserResponse
 import com.example.bitable_fe.core.network.response.UserSettingsResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,9 @@ class SettingsViewModel @Inject constructor(
     private val _settings = MutableStateFlow<UserSettingsResponse?>(null)
     val settings = _settings.asStateFlow()
 
+    private val _users = MutableStateFlow<UserResponse?>(null)
+    val users = _users.asStateFlow()
+
     // 간편하게 UI에서 접근할 수 있도록 분리
     val ttsSpeed = settings.map { it?.ttsSpeed ?: 1.5 }.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(), 1.5
@@ -43,7 +47,15 @@ class SettingsViewModel @Inject constructor(
     init {
         loadUserIdAndSettings()
     }
-
+    private fun loadUser(){
+        viewModelScope.launch {
+            runCatching {
+                userRepo.getUser(userId)
+            }.onSuccess {
+                _users.value = it
+            }
+        }
+    }
     private fun loadUserIdAndSettings() {
         viewModelScope.launch {
             prefs.userId.collect { id ->

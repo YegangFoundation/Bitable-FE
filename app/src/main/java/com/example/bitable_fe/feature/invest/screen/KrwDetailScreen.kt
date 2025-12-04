@@ -28,117 +28,112 @@ fun KrwDetailScreen(
     val depositLog by vm.depositLog.collectAsState()
     val withdrawLog by vm.withdrawLog.collectAsState()
 
-    Scaffold(
-        floatingActionButton = { VoiceFloatingButton() }
-    ) { padding ->
+    LazyColumn(
+        modifier = Modifier
+            .padding(16.dp)
+    ) {
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-        ) {
+        // -------------------------------------------------------------
+        // ▣ 상단 Summary
+        // -------------------------------------------------------------
+        item {
+            when (summaryState) {
 
-            // -------------------------------------------------------------
-            // ▣ 상단 Summary
-            // -------------------------------------------------------------
-            item {
-                when (summaryState) {
+                AccountUiState.Idle -> {
+                    Text("정보 로딩 전...", color = Color.Gray)
+                }
 
-                    AccountUiState.Idle -> {
-                        Text("정보 로딩 전...", color = Color.Gray)
-                    }
+                AccountUiState.Loading -> {
+                    Text("불러오는 중...", color = Color.Gray)
+                }
 
-                    AccountUiState.Loading -> {
-                        Text("불러오는 중...", color = Color.Gray)
-                    }
+                is AccountUiState.Error -> {
+                    Text(
+                        (summaryState as AccountUiState.Error).msg,
+                        color = Color.Red
+                    )
+                }
 
-                    is AccountUiState.Error -> {
-                        Text(
-                            (summaryState as AccountUiState.Error).msg,
-                            color = Color.Red
-                        )
-                    }
+                is AccountUiState.Success -> {
+                    val info = (summaryState as AccountUiState.Success).data as AccountInfo
 
-                    is AccountUiState.Success -> {
-                        val info = (summaryState as AccountUiState.Success).data as AccountInfo
+                    Text("총 보유 자산", fontSize = 20.sp)
+                    Text(
+                        "${info.balanceKrw.toInt()} KRW",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold
+                    )
 
-                        Text("총 보유 자산", fontSize = 20.sp)
-                        Text(
-                            "${info.balanceKrw.toInt()} KRW",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                    Spacer(Modifier.height(8.dp))
 
-                        Spacer(Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = onGoDeposit,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Button(
-                                onClick = onGoDeposit,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("입금")
-                            }
+                            Text("입금")
+                        }
 
-                            Spacer(Modifier.width(12.dp))
+                        Spacer(Modifier.width(12.dp))
 
-                            Button(
-                                onClick = onGoWithdraw,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(Color.Gray),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text("출금")
-                            }
+                        Button(
+                            onClick = onGoWithdraw,
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(Color.Gray),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("출금")
                         }
                     }
                 }
             }
+        }
 
-            item { Spacer(Modifier.height(24.dp)) }
+        item { Spacer(Modifier.height(24.dp)) }
 
-            // -------------------------------------------------------------
-            // ▣ 입금 로그
-            // -------------------------------------------------------------
-            if (depositLog.isNotEmpty()) {
-                item {
-                    Text(
-                        "입금 내역",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
-
-                items(depositLog) { log ->
-                    TransactionLogRow(title = "입금 완료", color = Color(0xFF006AFF), log)
-                }
+        // -------------------------------------------------------------
+        // ▣ 입금 로그
+        // -------------------------------------------------------------
+        if (depositLog.isNotEmpty()) {
+            item {
+                Text(
+                    "입금 내역",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
             }
 
-            // -------------------------------------------------------------
-            // ▣ 출금 로그
-            // -------------------------------------------------------------
-            if (withdrawLog.isNotEmpty()) {
-                item {
-                    Text(
-                        "출금 내역",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-                }
+            items(depositLog) { log ->
+                TransactionLogRow(title = "입금 완료", color = Color(0xFF006AFF), log)
+            }
+        }
 
-                items(withdrawLog) { log ->
-                    TransactionLogRow(title = "출금 완료", color = Color(0xFFD73D4A), log)
-                }
+        // -------------------------------------------------------------
+        // ▣ 출금 로그
+        // -------------------------------------------------------------
+        if (withdrawLog.isNotEmpty()) {
+            item {
+                Text(
+                    "출금 내역",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+
+            items(withdrawLog) { log ->
+                TransactionLogRow(title = "출금 완료", color = Color(0xFFD73D4A), log)
             }
         }
     }
 }
+
 
 @Composable
 private fun TransactionLogRow(

@@ -3,6 +3,7 @@ package com.example.bitable_fe.feature.setting.navgraph
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.example.bitable_fe.core.navigation.SettingNavigator
 import com.example.bitable_fe.feature.setting.screen.CustomizeReadingScreen
 import com.example.bitable_fe.feature.setting.screen.InfoLevelSettingScreen
 import com.example.bitable_fe.feature.setting.screen.SettingsMainScreen
