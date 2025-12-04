@@ -20,15 +20,6 @@ fun NavGraphBuilder.investNavGraph(
         DepositMainScreen(
             onGoToKrwDetail = {
                 navController.navigate(InvestRoute.KrwDetailRoute)
-            },
-            onHomeClick = {
-                navigator.goToTradeScreen()
-            },
-            onSettingClick = {
-                navigator.goToSettingScreen()
-            },
-            onInvestClick = {
-                navigator.restInvestScreen()
             }
         )
     }
@@ -46,15 +37,6 @@ fun NavGraphBuilder.investNavGraph(
 
     composable<InvestRoute.PortfolioRoute> {
         PortfolioScreen(
-            onInvestClick = {
-                navigator.restInvestScreen()
-            },
-            onSettingClick = {
-                navigator.goToSettingScreen()
-            },
-            onHomeClick = {
-                navigator.goToTradeScreen()
-            },
             onListenSummary = {
                 TODO()
             }
@@ -63,15 +45,6 @@ fun NavGraphBuilder.investNavGraph(
 
     composable<InvestRoute.ProfitRoute> {
         ProfitScreen(
-            onHomeClick = {
-                navigator.goToTradeScreen()
-            },
-            onSettingClick = {
-                navigator.goToSettingScreen()
-            },
-            onInvestClick = {
-                navigator.restInvestScreen()
-            },
             onListenClick = {
                 TODO()
             }

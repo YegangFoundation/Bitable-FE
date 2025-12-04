@@ -11,19 +11,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bitable_fe.feature.invest.navgraph.InvestRoute
 
 @Composable
 fun InvestTopBar(
-    selected: InvestRoute?,
+    selectedRoute: String?,               // ← 수정됨
     onTabSelected: (InvestRoute) -> Unit
 ) {
     Column {
@@ -36,7 +38,7 @@ fun InvestTopBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 6.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            textAlign = TextAlign.Center
         )
 
         Spacer(Modifier.height(8.dp))
@@ -47,26 +49,39 @@ fun InvestTopBar(
                 .padding(vertical = 4.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
+
+            // ---------------------------------------------------
+            // 투자내역
+            // ---------------------------------------------------
             InvestTabItem(
                 text = "투자내역",
-                selected = selected == InvestRoute.PortfolioRoute,
+                selected = selectedRoute == InvestRoute.PortfolioRoute::class.qualifiedName,
                 onClick = { onTabSelected(InvestRoute.PortfolioRoute) }
             )
+
+            // ---------------------------------------------------
+            // 투자손익
+            // ---------------------------------------------------
             InvestTabItem(
                 text = "투자손익",
-                selected = selected == InvestRoute.ProfitRoute,
+                selected = selectedRoute == InvestRoute.ProfitRoute::class.qualifiedName,
                 onClick = { onTabSelected(InvestRoute.ProfitRoute) }
             )
+
+            // ---------------------------------------------------
+            // 입출금
+            // ---------------------------------------------------
             InvestTabItem(
                 text = "입출금",
-                selected = selected == InvestRoute.DepositMainRoute,
+                selected = selectedRoute == InvestRoute.DepositMainRoute::class.qualifiedName,
                 onClick = { onTabSelected(InvestRoute.DepositMainRoute) }
             )
         }
 
-        androidx.compose.material3.Divider(color = Color(0xFFE0E0E0))
+        Divider(color = Color(0xFFE0E0E0))
     }
 }
+
 
 @Composable
 private fun InvestTabItem(

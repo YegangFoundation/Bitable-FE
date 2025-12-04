@@ -53,13 +53,10 @@ fun VoiceSpeedSettingScreen(
 
     // 👉 updateSettings 성공 시 다음 화면 이동
     LaunchedEffect(uiState) {
-        onNextClicked() // TODO 수정되면 삭제
-        /* // TODO 수정 되면 주석 제거
+
         if (uiState is UserUiState.Success) {
             onNextClicked()
         }
-
-         */
     }
 
     // 👉 userId 로드 중이면 UI 렌더링 안 함

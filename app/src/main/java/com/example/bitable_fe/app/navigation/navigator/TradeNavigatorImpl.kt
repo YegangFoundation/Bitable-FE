@@ -3,6 +3,7 @@ package com.example.bitable_fe.app.navigation.navigator
 import androidx.navigation.NavController
 import com.example.bitable_fe.core.navigation.TradeNavigator
 import com.example.bitable_fe.feature.invest.navgraph.InvestRoute
+import com.example.bitable_fe.feature.setting.navgraph.SettingsRoute
 import com.example.bitable_fe.feature.trade.navgraph.TradeRoute
 
 class TradeNavigatorImpl(
@@ -13,6 +14,7 @@ class TradeNavigatorImpl(
     }
 
     override fun goToSettingScreen() {
+        navController.navigate(SettingsRoute.SettingsHostRoute)
     }
 
     override fun resetTradeScreen() {

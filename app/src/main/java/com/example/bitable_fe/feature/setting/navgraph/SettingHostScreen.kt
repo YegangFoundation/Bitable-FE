@@ -6,14 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
 import com.example.bitable_fe.core.navigation.SettingNavigator
 import com.example.bitable_fe.core.ui.component.BottomBar
 
 @Composable
 fun SettingsHostScreen(
-    navController: NavHostController,
     navigator: SettingNavigator
 ) {
+    val navController = rememberNavController()
+
     Scaffold(
         bottomBar = {
             BottomBar(
@@ -30,7 +32,7 @@ fun SettingsHostScreen(
             startDestination = SettingsRoute.SettingsMainRoute,
             modifier = Modifier.padding(padding)
         ) {
-            settingsInnerGraph(navController, navigator)
+            settingsInnerGraph(navController)
         }
     }
 }

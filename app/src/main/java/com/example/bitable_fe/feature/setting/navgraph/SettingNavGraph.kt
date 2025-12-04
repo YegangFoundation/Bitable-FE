@@ -9,8 +9,7 @@ import com.example.bitable_fe.feature.setting.screen.SettingsMainScreen
 import com.example.bitable_fe.feature.setting.screen.SpeedSettingScreen
 
 fun NavGraphBuilder.settingsInnerGraph(
-    navController: NavController,
-    navigator: SettingNavigator
+    navController: NavController
 ) {
 
     /** ● 메인 설정 화면 */

@@ -45,7 +45,6 @@ fun NavGraph(
 
         composable<SettingsRoute.SettingsHostRoute> {
             SettingsHostScreen(
-                navController = navController,
                 navigator = SettingNavigatorImpl(navController)
             )
         }

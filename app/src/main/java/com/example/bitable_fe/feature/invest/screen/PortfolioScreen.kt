@@ -54,7 +54,7 @@ fun PortfolioScreen(
             Column {
                 Text("총 보유 자산", fontSize = 18.sp, color = Color.Gray)
                 Text(
-                    summary!!.totalBalanceKrw.toInt().toString(),
+                    summary?.totalBalanceKrw?.toInt().toString(),
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold
                 )
