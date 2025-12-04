@@ -37,7 +37,7 @@ class VoiceViewModel @Inject constructor(
             _state.value = VoiceUiState.Loading
 
             val requestFile = file.asRequestBody("audio/mp4".toMediaType())
-            val part = MultipartBody.Part.createFormData("audio", file.name, requestFile)
+            val part = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
             runCatching { repo.uploadAudio(userId, part) }
                 .onSuccess { _state.value = VoiceUiState.Success(it) }

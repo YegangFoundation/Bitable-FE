@@ -35,11 +35,13 @@ import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
 import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 
 @Composable
 fun SellScreen(
     symbol: String,      // 예: "XRP"
     coinViewModel: CoinViewModel = hiltViewModel(),
+    voiceViewModel: VoiceViewModel = hiltViewModel(),
     onSellConfirm: () -> Unit = {},
 ) {
     val uiState by coinViewModel.state.collectAsState()
@@ -66,7 +68,7 @@ fun SellScreen(
     }
 
     Scaffold(
-        floatingActionButton = { VoiceFloatingButton() }
+        floatingActionButton = { VoiceFloatingButton(voiceViewModel) }
     ) { padding ->
 
         Column(

@@ -15,18 +15,24 @@ import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 
 @Composable
 fun InvestHostScreen(navigator: InvestNavigator) {
+
     val navController = rememberNavController()
-    val currentRoute = navController.currentBackStackEntryAsState()
-        .value?.toRoute<InvestRoute>()
-    val showGlobalTopBar = currentRoute is InvestRoute.PortfolioRoute ||
-            currentRoute is InvestRoute.ProfitRoute ||
-            currentRoute is InvestRoute.DepositMainRoute
+
+    val routeString = navController.currentBackStackEntryAsState()
+        .value?.destination?.route
+
+    val showGlobalTopBar = when(routeString) {
+        InvestRoute.PortfolioRoute::class.qualifiedName -> true
+        InvestRoute.ProfitRoute::class.qualifiedName -> true
+        InvestRoute.DepositMainRoute::class.qualifiedName -> true
+        else -> false
+    }
 
     Scaffold(
         topBar = {
-            if (showGlobalTopBar){
+            if (showGlobalTopBar) {
                 InvestTopBar(
-                    selected = currentRoute,
+                    selected = null, // 이제 toRoute 사용 안 함
                     onTabSelected = { route ->
                         navController.navigate(route) {
                             popUpTo<InvestRoute.DepositMainRoute>()
@@ -38,21 +44,13 @@ fun InvestHostScreen(navigator: InvestNavigator) {
         },
         bottomBar = {
             BottomBar(
-                onInvestClick = {
-                    navigator.restInvestScreen()
-                },
-                onSettingClick = {
-                    navigator.goToSettingScreen()
-                },
-                onHomeClick = {
-                    navigator.goToTradeScreen()
-                },
-                selectedTab = 2
+                onInvestClick = navigator::restInvestScreen,
+                onSettingClick = navigator::goToSettingScreen,
+                onHomeClick = navigator::goToTradeScreen,
+                selectedTab = 1
             )
         },
-        floatingActionButton = {
-            VoiceFloatingButton()
-        }
+        floatingActionButton = { VoiceFloatingButton() }
     ) { padding ->
         NavHost(
             navController = navController,

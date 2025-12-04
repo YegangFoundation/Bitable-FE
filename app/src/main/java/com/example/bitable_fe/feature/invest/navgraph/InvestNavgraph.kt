@@ -18,9 +18,6 @@ fun NavGraphBuilder.investNavGraph(
 ){
     composable<InvestRoute.DepositMainRoute> {
         DepositMainScreen(
-            onGoToKrwDetail = {
-                navController.navigate(InvestRoute.KrwDetailRoute)
-            }
         )
     }
 
@@ -37,8 +34,11 @@ fun NavGraphBuilder.investNavGraph(
 
     composable<InvestRoute.PortfolioRoute> {
         PortfolioScreen(
-            onListenSummary = {
-                TODO()
+            onClickDeposit = {
+                navController.navigate(InvestRoute.DepositAmountRoute)
+            },
+            onClickDetail = {
+                navController.navigate(InvestRoute.KrwDetailRoute)
             }
         )
     }
