@@ -1,22 +1,23 @@
 package com.example.bitable_fe.feature.onboarding.screen
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,16 +26,40 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.R
+import com.example.bitable_fe.core.network.response.UserResponse
+import com.example.bitable_fe.core.ui.state.UserUiState
+import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
+import com.example.bitable_fe.core.ui.viewmodel.UserViewModel
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, loginClicked: () -> Unit){
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    userViewModel: UserViewModel = hiltViewModel(),
+    userPref: UserPreferencesViewModel = hiltViewModel(),
+    loginClicked: () -> Unit
+) {
+    val phoneState = rememberTextFieldState()
+    val nameState = rememberTextFieldState()
+
+    val uiState by userViewModel.state.collectAsState()
+
+    // 회원가입 성공 시 화면 이동
+    LaunchedEffect(uiState) {
+        if (uiState is UserUiState.Success) {
+            val res = (uiState as UserUiState.Success).data as UserResponse
+            userPref.saveUserId(res.userId)
+            loginClicked()
+        }
+    }
 
     Column(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Image(
             painter = painterResource(R.drawable.logo),
             contentDescription = null,
@@ -42,9 +67,12 @@ fun LoginScreen(modifier: Modifier = Modifier, loginClicked: () -> Unit){
                 .height(100.dp)
                 .width(260.dp)
         )
+
         Spacer(Modifier.height(48.dp))
+
+        // 전화번호 입력
         OutlinedTextField(
-            state = rememberTextFieldState(),
+            state = phoneState,
             lineLimits = TextFieldLineLimits.SingleLine,
             placeholder = { Text("전화번호 입력") },
             modifier = Modifier
@@ -52,8 +80,10 @@ fun LoginScreen(modifier: Modifier = Modifier, loginClicked: () -> Unit){
                 .height(72.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
+
+        // 이름 입력
         OutlinedTextField(
-            state = rememberTextFieldState(),
+            state = nameState,
             lineLimits = TextFieldLineLimits.SingleLine,
             placeholder = { Text("이름 입력") },
             modifier = Modifier
@@ -61,9 +91,18 @@ fun LoginScreen(modifier: Modifier = Modifier, loginClicked: () -> Unit){
                 .height(72.dp)
                 .clip(RoundedCornerShape(16.dp))
         )
+
         Spacer(Modifier.height(48.dp))
+
         Button(
-            onClick = loginClicked,
+            onClick = {
+                val phone = phoneState.text.toString()
+                val name = nameState.text.toString()
+
+                if (phone.isNotBlank() && name.isNotBlank()) {
+                    userViewModel.createUser(phone, name)
+                }
+            },
             modifier = Modifier
                 .width(345.dp)
                 .height(64.dp)
@@ -83,5 +122,5 @@ fun LoginScreen(modifier: Modifier = Modifier, loginClicked: () -> Unit){
 @Preview
 @Composable
 private fun LoginScreenPreview(){
-    LoginScreen(){}
+    LoginScreen{}
 }
