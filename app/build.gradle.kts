@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.androidx.compose.ui.text)
+    implementation(libs.androidx.material3)
     ksp(libs.hilt.android.compiler)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)

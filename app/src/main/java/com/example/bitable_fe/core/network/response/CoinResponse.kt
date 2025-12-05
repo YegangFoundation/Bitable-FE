@@ -13,6 +13,8 @@ data class CoinResponse(
 
 @Serializable
 data class MarketData(
+    val koreanName: String,
+    val englishName: String,
     val market: String,
     val trade_date: String,
     val trade_time: String,

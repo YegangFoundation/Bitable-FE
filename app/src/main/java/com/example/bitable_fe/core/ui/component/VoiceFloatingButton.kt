@@ -1,5 +1,8 @@
 package com.example.bitable_fe.core.ui.component
 
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
@@ -12,32 +15,68 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import java.io.File
 
 @Composable
 fun VoiceFloatingButton(
-    viewModel: VoiceViewModel,
+    viewModel: VoiceViewModel = hiltViewModel(),
     userId: Long = 1L
 ) {
     val context = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
-
-    val audioFile = remember {
-        File(context.cacheDir, "voice_${System.currentTimeMillis()}.mp4")
-    }
-    val recorder = remember { VoiceRecorder(audioFile) }
+    var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
+    var audioFile by remember { mutableStateOf<File?>(null) }
 
     FloatingActionButton(
         onClick = {
+            val permission = Manifest.permission.RECORD_AUDIO
+
+            // 1️⃣ 권한 체크
+            val granted = ContextCompat.checkSelfPermission(
+                context,
+                permission
+            ) == PackageManager.PERMISSION_GRANTED
+
+            // 2️⃣ 권한 없으면 요청
+            if (!granted) {
+                (context as? Activity)?.let {
+                    ActivityCompat.requestPermissions(
+                        it,
+                        arrayOf(permission),
+                        1000
+                    )
+                }
+                return@FloatingActionButton
+            }
+
+            // 3️⃣ 권한 있을 때만 녹음 기능 동작
             if (!isRecording) {
-                recorder.start()
+                // 🔥 매번 새 파일 생성
+                val file = File(context.cacheDir, "voice_${System.currentTimeMillis()}.mp4")
+                audioFile = file
+
+                // 🔥 녹음기 새로 생성
+                recorder = VoiceRecorder(file).also {
+                    it.start()
+                }
                 isRecording = true
+
             } else {
-                recorder.stop()
+                // 🔥 녹음 종료
+                recorder?.stop()
                 isRecording = false
-                viewModel.sendRecordedAudio(userId, audioFile)
+
+                // 🔥 서버로 업로드
+                audioFile?.let {
+                    viewModel.sendRecordedAudio(userId, it)
+                }
+
+                // cleanup
+                recorder = null
             }
         },
         containerColor = if (isRecording) Color.Red else Color(0xFF006AFF),
@@ -50,3 +89,4 @@ fun VoiceFloatingButton(
         )
     }
 }
+

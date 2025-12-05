@@ -3,10 +3,12 @@ package com.example.bitable_fe.core.network.api
 import com.example.bitable_fe.core.network.request.VoiceCommandRequest
 import com.example.bitable_fe.core.network.response.ApiResponse
 import com.example.bitable_fe.core.network.response.VoiceCommandResponse
+import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
+import retrofit2.http.Query
 
 interface VoiceApi {
 
@@ -23,7 +25,7 @@ interface VoiceApi {
     @Multipart
     @POST("/api/voice/audio")
     suspend fun processAudioCommand(
-        @Part("userId") userId: Long,
-        @Part audio: okhttp3.MultipartBody.Part
+        @Query("userId") userId: Long,                  // ← query로 변경
+        @Part file: MultipartBody.Part                  // ← 파트 이름을 file 로 변경
     ): ApiResponse<VoiceCommandResponse>
 }

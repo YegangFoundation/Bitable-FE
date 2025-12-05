@@ -64,21 +64,6 @@ fun ProfitScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // ----------------------------------
-        // 상단 탭
-        // ----------------------------------
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Text("투자내역", color = Color.Gray)
-            Text("투자손익", color = Color(0xFF006AFF), fontWeight = FontWeight.Bold)
-            Text("입출금", color = Color.Gray)
-        }
-
-        Divider(color = Color(0xFF006AFF), thickness = 2.dp)
-
-        Spacer(Modifier.height(16.dp))
 
         // ----------------------------------
         // 기간 탭

@@ -2,31 +2,26 @@ package com.example.bitable_fe.feature.setting.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.R
 import com.example.bitable_fe.core.ui.viewmodel.SettingsViewModel
+
 
 @Composable
 fun SettingsMainScreen(
@@ -37,80 +32,134 @@ fun SettingsMainScreen(
     onGoCommandExample: () -> Unit,
     onResetClick: () -> Unit,
 ) {
-
-    val users = vm.users.collectAsState()
+    val userState = vm.users.collectAsState()
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier.padding(bottom = 13.dp)
         ) {
             Text("설정", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         }
+        Spacer(Modifier.height(24.dp))
 
+        Spacer(Modifier.height(8.dp))
+
+        /** -------------------------
+         *  프로필 카드
+         * ------------------------- */
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(20.dp)),
-            contentAlignment = Alignment.Center
+                .shadow(
+                    elevation = 4.dp,
+                    shape = RoundedCornerShape(20.dp),
+                    clip = false
+                )
+                .background(Color.White, RoundedCornerShape(20.dp))
+                .padding(20.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
                     painter = painterResource(R.drawable.user),
-                    contentDescription = "null",
+                    contentDescription = "User Icon",
+                    modifier = Modifier.size(64.dp)
                 )
-                Column() {
+
+                Spacer(Modifier.width(16.dp))
+
+                Column {
                     Text(
-                        users.value?.name ?: "User",
+                        text = userState.value?.name ?: "Name",
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp
                     )
-                    Text("Email@gmail.com", fontSize = 20.sp, color = Color(0xFF6B7583))
+                    Text(
+                        text = "Email@gmail.com",
+                        fontSize = 20.sp,
+                        color = Color(0xFF6B7583)
+                    )
                 }
             }
-
         }
+
         Spacer(Modifier.height(24.dp))
 
-        SettingItem("음성 속도 설정") { onGoSpeed() }
-        SettingItem("음성 정보 단계") { onGoInfoLevel() }
-        SettingItem("읽기 항목 커스터마이즈") { onGoCustomize() }
-        SettingItem("음성 명령 예시") { onGoCommandExample() }
 
-        Spacer(Modifier
-            .height(16.dp)
-            .background(Color.Gray))
+        /** -------------------------
+         *  메뉴 리스트
+         * ------------------------- */
 
+        SettingsItem("음성 속도 설정", onGoSpeed)
+        Divider(color = Color(0xFFE5E5E5))
+
+        SettingsItem("음성 정보 단계", onGoInfoLevel)
+        Divider(color = Color(0xFFE5E5E5))
+
+        SettingsItem("읽기 항목 커스터마이즈", onGoCustomize)
+        Divider(color = Color(0xFFE5E5E5))
+
+        SettingsItem("음성 명령 예시", onGoCommandExample)
+        Divider(color = Color(0xFFE5E5E5), thickness = 16.dp)
+
+        Spacer(Modifier.height(24.dp))
+
+        /** -------------------------
+         *  Reset 버튼
+         * ------------------------- */
         Text(
-            "개인정보 및 데이터 리셋",
+            text = "개인정보 및 데이터 리셋",
             color = Color.Red,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable { onResetClick() }
+            modifier = Modifier
+                .clickable(onClick = onResetClick)
+                .padding(vertical = 12.dp)
         )
     }
-
 }
 
+
 @Composable
-private fun SettingItem(title: String, onClick: () -> Unit) {
+private fun SettingsItem(
+    title: String,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 24.dp)
-            .clickable(onClick = onClick)
-            .border(1.dp, Color.Gray),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 18.dp)
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = title,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
     }
+}
+
+
+/** -------------------------
+ *   PREVIEW — ViewModel 제거
+ * ------------------------- */
+@Preview(showBackground = true)
+@Composable
+fun SettingsMainScreenPreview() {
+    SettingsMainScreen(
+        onGoSpeed = {},
+        onGoInfoLevel = {},
+        onGoCustomize = {},
+        onGoCommandExample = {},
+        onResetClick = {}
+    )
 }

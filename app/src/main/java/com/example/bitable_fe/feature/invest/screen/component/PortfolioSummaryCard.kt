@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.sp
 import com.example.bitable_fe.core.network.response.PortfolioSummary
 
 @Composable
-fun PortfolioSummaryCard(summary: PortfolioSummary) {
+fun PortfolioSummaryCard(summary: PortfolioSummary?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -21,15 +21,17 @@ fun PortfolioSummaryCard(summary: PortfolioSummary) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        SummaryRow("총 매수", summary.totalBalanceKrw.toInt().toString())
-        SummaryRow("총 평가", summary.totalBalanceKrw.toInt().toString())
-        SummaryRow("평가 손익", summary.totalProfitLossKrw.toInt().toString())
-        SummaryRow(
-            "수익률",
-            "${"%.2f".format(summary.totalProfitLossRate * 100)}%",
-            isRate = true,
-            isPositive = summary.totalProfitLossRate >= 0
-        )
+        SummaryRow("총 매수", summary?.totalBalanceKrw?.toInt().toString())
+        SummaryRow("총 평가", summary?.totalBalanceKrw?.toInt().toString())
+        SummaryRow("평가 손익", summary?.totalProfitLossKrw?.toInt().toString())
+        summary?.totalProfitLossRate?.let {
+            SummaryRow(
+                "수익률",
+                "${"%.2f".format(summary.totalProfitLossRate * 100)}%",
+                isRate = true,
+                isPositive = it >= 0
+            )
+        }
     }
 }
 

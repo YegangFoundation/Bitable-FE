@@ -16,6 +16,9 @@ sealed interface OnboardingRoute {
     ) : OnboardingRoute
 
     @Serializable
+    data object AccountInputRoute : OnboardingRoute
+
+    @Serializable
     data class VoiceInformationAmountSettingRoute(
         val initialOption: VoiceOption = VoiceOption.DETAIL
     ) : OnboardingRoute

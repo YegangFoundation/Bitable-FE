@@ -10,6 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,6 +36,7 @@ fun ExchangeScreen(
     coinViewModel: CoinViewModel = hiltViewModel()
 ) {
     val uiState by coinViewModel.state.collectAsState()
+    var selectedTab by remember { mutableIntStateOf(0) } // ← Tab 상태 추가
 
     LaunchedEffect(Unit) {
         coinViewModel.getAllMarkets()
@@ -58,7 +62,13 @@ fun ExchangeScreen(
         ) {
             SearchBar()
             Spacer(Modifier.height(12.dp))
-            MarketTabRow()
+
+            // 🔥 이제 선택을 상위에서 관리한다!
+            MarketTabRow(
+                selectedTabIndex = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+
             Spacer(Modifier.height(12.dp))
 
             when (uiState) {
@@ -71,8 +81,17 @@ fun ExchangeScreen(
                 }
 
                 is CoinUiState.Success -> {
-                    val markets = (uiState as CoinUiState.Success<*>).data
-                    CoinList(items = markets as List<MarketData>, onItemClick = onCoinClick)
+                    val markets = (uiState as CoinUiState.Success<List<MarketData>>).data
+
+                    val filtered = when (selectedTab) {
+                        0 -> markets.filter { it.market.startsWith("KRW-") }
+                        1 -> markets.filter { it.market.startsWith("BTC-") }
+                        2 -> markets.filter { it.market.startsWith("USDT-") }
+                        3 -> emptyList() // 관심 코인 (추후 구현)
+                        else -> markets
+                    }
+
+                    CoinList(items = filtered, onItemClick = onCoinClick)
                 }
 
                 else -> {}
@@ -80,6 +99,7 @@ fun ExchangeScreen(
         }
     }
 }
+
 
 
 

@@ -48,7 +48,7 @@ fun CoinRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(symbol, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Text(item.koreanName, fontWeight = FontWeight.Bold, fontSize = 24.sp)
             Text("${symbol}/${currency}", color = Color.Gray, fontSize = 20.sp)
 
             Text(

@@ -104,4 +104,5 @@ object RepositoryModule {
     @Singleton
     fun provideVoiceRepository(api: VoiceApi): VoiceRepository =
         VoiceRepositoryImpl(api)
+
 }

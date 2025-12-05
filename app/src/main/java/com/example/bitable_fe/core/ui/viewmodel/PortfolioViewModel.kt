@@ -6,62 +6,96 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bitable_fe.core.data.datastore.UserPreferencesDataStore
+import com.example.bitable_fe.core.data.model.CoinDetailUi
+import com.example.bitable_fe.core.data.model.PieItemUi
+import com.example.bitable_fe.core.data.model.PortfolioUi
 import com.example.bitable_fe.core.data.repository.iface.HoldingsRepository
 import com.example.bitable_fe.core.data.repository.iface.PortfolioRepository
 import com.example.bitable_fe.core.network.response.HoldingResponse
 import com.example.bitable_fe.core.network.response.PortfolioSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltViewModel
 class PortfolioViewModel @Inject constructor(
-    private val portfolioRepo: PortfolioRepository,
-    private val holdingsRepo: HoldingsRepository,
-    private val prefs: UserPreferencesDataStore
+    private val repo: PortfolioRepository
 ) : ViewModel() {
 
-    // --- UI State ---
-    var summary by mutableStateOf<PortfolioSummary?>(null)
-        private set
+    private val _uiState = MutableStateFlow<PortfolioUi?>(null)
+    val uiState = _uiState.asStateFlow()
 
-    var holdings by mutableStateOf<List<HoldingResponse>>(emptyList())
-        private set
+    private val _holdings = MutableStateFlow<List<HoldingResponse>>(emptyList())
+    val holdings = _holdings.asStateFlow()
 
-    var loading by mutableStateOf(false)
-        private set
-
-    var error by mutableStateOf<String?>(null)
-        private set
-
-
-    init {
-        loadPortfolio()
+    fun loadAll(accountId: Long) {
+        loadPortfolio(accountId)
+        loadHoldings(accountId)
     }
 
-    fun loadPortfolio() {
+    fun loadPortfolio(accountId: Long) {
         viewModelScope.launch {
-            loading = true
-            error = null
-
-            // ⭐ userId 또는 accountId 가져오기
-            val accountId = prefs.userId.first()
-
-            runCatching {
-                // 병렬로 API 요청
-                val summaryDeferred = async { portfolioRepo.getSummary(accountId) }
-                val holdingsDeferred = async { holdingsRepo.getHoldings(accountId) }
-
-                summary = summaryDeferred.await()
-                holdings = holdingsDeferred.await()
-            }
-                .onFailure {
-                    error = it.message ?: "Unknown Error"
+            runCatching { repo.getSummary(accountId) }
+                .onSuccess { summary ->
+                    _uiState.value = summary.toUi()
                 }
-
-            loading = false
+                .onFailure {
+                    _uiState.value = null
+                }
         }
     }
+
+    fun loadHoldings(accountId: Long) {
+        viewModelScope.launch {
+            runCatching { repo.getHoldings(accountId) }
+                .onSuccess { list ->
+                    _holdings.value = list
+                }
+                .onFailure {
+                    _holdings.value = emptyList()
+                }
+        }
+    }
+
+    fun PortfolioSummary.toUi(): PortfolioUi {
+        val chartColors = listOf(
+            0xFFE57373, 0xFF64B5F6, 0xFF81C784, 0xFFFFB74D, 0xFFBA68C8
+        )
+
+        val coins = this.details
+
+        val pieItems = coins.mapIndexed { index, c ->
+            PieItemUi(
+                name = c.symbol,
+                ratio = c.holdingQuantity / coins.sumOf { it.holdingQuantity },
+                color = chartColors[index % chartColors.size]
+            )
+        }
+
+        val coinDetails = coins.map { c ->
+            CoinDetailUi(
+                symbol = c.symbol,
+                name = c.coinName,
+                quantity = c.holdingQuantity,
+                profit = c.profitLossKrw,
+                profitRate = c.profitLossRate,
+                evalAmount = c.currentPrice * c.holdingQuantity,
+                buyAmount = c.avgBuyPrice * c.holdingQuantity
+            )
+        }
+
+        return PortfolioUi(
+            totalBalance = totalBalanceKrw,
+            totalProfit = totalProfitLossKrw,
+            totalProfitRate = totalProfitLossRate,
+            pieItems = pieItems,
+            coinDetails = coinDetails
+        )
+    }
 }
+

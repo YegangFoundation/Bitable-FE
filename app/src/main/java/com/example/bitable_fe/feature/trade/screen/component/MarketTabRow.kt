@@ -13,17 +13,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MarketTabRow() {
+fun MarketTabRow(
+    selectedTabIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
     val tabs = listOf("KRW", "BTC", "USDT", "관심")
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
-    SecondaryTabRow(
-        selectedTabIndex = selectedTabIndex
-    ) {
+    SecondaryTabRow(selectedTabIndex = selectedTabIndex) {
         tabs.forEachIndexed { index, text ->
             Tab(
                 selected = selectedTabIndex == index,
-                onClick = { selectedTabIndex = index },
+                onClick = { onTabSelected(index) },
                 text = {
                     Text(
                         text,
