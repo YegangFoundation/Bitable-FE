@@ -19,32 +19,34 @@ import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
 import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.state.CoinDetailState
+import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
+
 
 @Composable
 fun BuyScreen(
-    symbol: String,          // 예: "XRP"
-    coinViewModel: CoinViewModel = hiltViewModel(),
+    symbol: String,
+    coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
 ) {
-    val uiState by coinViewModel.state.collectAsState()
+    val uiState by coinDetailViewModel.tickerState.collectAsState()
 
-    // ----- 입력 값들 -----
-    var amount by remember { mutableStateOf("") }                // 수량 입력값
-    var price by remember { mutableStateOf(0.0) }                // 현재가
-    var total by remember { mutableStateOf(0.0) }                // 총액 = 수량 * 가격
+    // 유저 입력값
+    var amount by remember { mutableStateOf("") }   // 수량
+    var price by remember { mutableStateOf(0.0) }   // 현재가
+    var total by remember { mutableStateOf(0.0) }   // 총액
 
-    // ----- 코인 정보 로딩 -----
+    // 🔥 티커 호출로 가격 데이터 가져오기
     LaunchedEffect(symbol) {
-        coinViewModel.getCoin(symbol)
+        coinDetailViewModel.loadTicker(symbol)
     }
 
-    // ----- API 응답 처리 -----
+    // 🔥 Ticker 응답 반영
     LaunchedEffect(uiState) {
-        if (uiState is CoinUiState.Success) {
-            val data = (uiState as CoinUiState.Success).data
-            if (data is MarketData) {
-                price = data.trade_price
-                total = (amount.toDoubleOrNull() ?: 0.0) * price
-            }
+        if (uiState is CoinDetailState.Success) {
+            val ticker = (uiState as CoinDetailState.Success).data
+
+            price = ticker.trade_price
+            total = (amount.toDoubleOrNull() ?: 0.0) * price
         }
     }
 
@@ -60,27 +62,25 @@ fun BuyScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // ----- 코인명 / 심볼 -----
+            // 🔥 코인명 표시
             Text(
-                text = uiState.let {
-                    if (it is CoinUiState.Success && it.data is MarketData) it.data.market
-                    else "불러오는 중..."
-                },
+                text = symbol.uppercase(),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            // ----- 입력 박스 -----
+            // 🔥 가격 입력 박스
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0xFFF6F7F9), RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
+
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                    // ① 수량
+                    // 수량
                     TradeInputRow(
                         label = "수량",
                         value = amount.ifBlank { "0" },
@@ -88,14 +88,14 @@ fun BuyScreen(
                         bold = true
                     )
 
-                    // ② 가격 (현재가)
+                    // 현재가
                     TradeInputRow(
                         label = "가격",
                         value = String.format("%,.0f", price),
                         unit = "KRW"
                     )
 
-                    // ③ 총액
+                    // 총액
                     TradeInputRow(
                         label = "총액",
                         value = String.format("%,.0f", total),
@@ -107,37 +107,30 @@ fun BuyScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // 퍼센트 선택기
             PercentSelector { percent ->
                 val pct = percent.replace("%", "").toInt()
-                val calc = pct / 100.0
-                amount = calc.toString()
-                total = price * calc
+                val ratio = pct / 100.0
+                amount = ratio.toString()
+                total = price * ratio
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // ----- 키패드 입력 -----
+            // 🔢 숫자 패드 입력
             TradeNumberPad { key ->
                 when (key) {
-                    "←" -> {
-                        amount = amount.dropLast(1)
-                    }
-                    "00" -> {
-                        // 기존 값이 비어있으면 00 입력 X
-                        if (amount.isNotEmpty()) amount += "00"
-                    }
-                    else -> { // 숫자
-                        amount += key
-                    }
+                    "←" -> amount = amount.dropLast(1)
+                    "00" -> if (amount.isNotEmpty()) amount += "00"
+                    else -> amount += key
                 }
 
                 total = (amount.toDoubleOrNull() ?: 0.0) * price
             }
 
-
             Spacer(Modifier.height(20.dp))
 
-            // ----- 매수 버튼 -----
+            // 🔥 매수 버튼
             Button(
                 onClick = {
                     // TODO: 매수 API 연동

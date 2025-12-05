@@ -50,8 +50,8 @@ fun InvestTopBar(
         ) {
             InvestTabItem(
                 text = "투자내역",
-                selected = selected == InvestRoute.PortfolioRoute,
-                onClick = { onTabSelected(InvestRoute.PortfolioRoute) }
+                selected = selected == InvestRoute.DepositMainRoute,
+                onClick = { onTabSelected(InvestRoute.DepositMainRoute) }
             )
             InvestTabItem(
                 text = "투자손익",
@@ -60,8 +60,8 @@ fun InvestTopBar(
             )
             InvestTabItem(
                 text = "입출금",
-                selected = selected == InvestRoute.DepositMainRoute,
-                onClick = { onTabSelected(InvestRoute.DepositMainRoute) }
+                selected = selected == InvestRoute.PortfolioRoute,
+                onClick = { onTabSelected(InvestRoute.PortfolioRoute) }
             )
         }
 

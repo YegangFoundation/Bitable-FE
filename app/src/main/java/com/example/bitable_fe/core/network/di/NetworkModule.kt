@@ -1,6 +1,7 @@
 package com.example.bitable_fe.core.network.di
 
 import com.example.bitable_fe.core.network.api.*
+import com.example.bitable_fe.core.network.logging.RequestIdInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +34,7 @@ object NetworkModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient =
         OkHttpClient.Builder()
+            .addInterceptor(RequestIdInterceptor())
             .addInterceptor(logging)
             .build()
 

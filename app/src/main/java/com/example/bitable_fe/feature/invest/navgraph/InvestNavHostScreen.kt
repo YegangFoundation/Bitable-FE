@@ -27,12 +27,18 @@ fun InvestHostScreen(navigator: InvestNavigator) {
         InvestRoute.DepositMainRoute::class.qualifiedName -> true
         else -> false
     }
+    val selectedRoute: InvestRoute? = when (routeString) {
+        InvestRoute.PortfolioRoute::class.qualifiedName -> InvestRoute.PortfolioRoute
+        InvestRoute.ProfitRoute::class.qualifiedName -> InvestRoute.ProfitRoute
+        InvestRoute.DepositMainRoute::class.qualifiedName -> InvestRoute.DepositMainRoute
+        else -> null
+    }
 
     Scaffold(
         topBar = {
             if (showGlobalTopBar) {
                 InvestTopBar(
-                    selected = null, // 이제 toRoute 사용 안 함
+                    selected = selectedRoute, // 이제 toRoute 사용 안 함
                     onTabSelected = { route ->
                         navController.navigate(route) {
                             popUpTo<InvestRoute.DepositMainRoute>()

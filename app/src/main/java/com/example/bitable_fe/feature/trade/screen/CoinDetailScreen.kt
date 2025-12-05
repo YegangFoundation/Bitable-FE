@@ -33,8 +33,8 @@ fun CoinDetailScreen(
     coinName: String,
     coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
     onListenSummaryClick: () -> Unit = {},
-    onSellClick: () -> Unit = {},
-    onBuyClick: () -> Unit = {}
+    onSellClick: (String) -> Unit = {},
+    onBuyClick: (String) -> Unit = {}
 ) {
     val period = coinDetailViewModel.period
     var isFavorite by remember { mutableStateOf(false) }
@@ -65,8 +65,8 @@ fun CoinDetailScreen(
         floatingActionButton = { VoiceFloatingButton() },
         bottomBar = {
             BottomTradeButtons(
-                onSellClick = onSellClick,
-                onBuyClick = onBuyClick
+                onSellClick = { onSellClick(coinName) },
+                onBuyClick = { onBuyClick(coinName) }
             )
         }
     ) { padding ->

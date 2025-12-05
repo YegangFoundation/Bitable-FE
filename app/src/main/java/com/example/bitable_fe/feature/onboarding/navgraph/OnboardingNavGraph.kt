@@ -4,6 +4,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.bitable_fe.core.navigation.OnboardingNavigator
+import com.example.bitable_fe.feature.onboarding.screen.AccountInputScreen
 import com.example.bitable_fe.feature.onboarding.screen.LoginScreen
 import com.example.bitable_fe.feature.onboarding.screen.SplashScreen
 import com.example.bitable_fe.feature.onboarding.screen.VoiceInformationAmountSettingScreen
@@ -21,7 +22,7 @@ fun NavGraphBuilder.onboardingNavGraph(
 
     composable<OnboardingRoute.LoginRoute> {
         LoginScreen {
-            navController.navigate(OnboardingRoute.VoiceSpeedSettingRoute())
+            navController.navigate(OnboardingRoute.AccountInputRoute)
         }
     }
 
@@ -34,6 +35,12 @@ fun NavGraphBuilder.onboardingNavGraph(
     composable<OnboardingRoute.VoiceInformationAmountSettingRoute> {
         VoiceInformationAmountSettingScreen {
             navigator.goToTradeScreen()
+        }
+    }
+
+    composable<OnboardingRoute.AccountInputRoute> {
+        AccountInputScreen {
+            navController.navigate(OnboardingRoute.VoiceSpeedSettingRoute())
         }
     }
 }

@@ -28,42 +28,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.bitable_fe.core.network.response.MarketData
-import com.example.bitable_fe.core.ui.state.CoinUiState
-import com.example.bitable_fe.core.ui.viewmodel.CoinViewModel
+import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.state.CoinDetailState
+import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
+import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
 import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
-import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
-import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 
 @Composable
 fun SellScreen(
-    symbol: String,      // 예: "XRP"
-    coinViewModel: CoinViewModel = hiltViewModel(),
+    symbol: String,
+    coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
     voiceViewModel: VoiceViewModel = hiltViewModel(),
     onSellConfirm: () -> Unit = {},
 ) {
-    val uiState by coinViewModel.state.collectAsState()
+    val uiState by coinDetailViewModel.tickerState.collectAsState()
 
-    // 입력값
-    var amount by remember { mutableStateOf("") }   // 수량
-    var price by remember { mutableStateOf(0.0) }   // 현재가
-    var total by remember { mutableStateOf(0.0) }   // 총액
+    var amount by remember { mutableStateOf("") }
+    var price by remember { mutableStateOf(0.0) }
+    var total by remember { mutableStateOf(0.0) }
 
-    // 코인정보 로드
+    // 🔥 getCoin 대신 loadTicker 사용
     LaunchedEffect(symbol) {
-        coinViewModel.getCoin(symbol)
+        coinDetailViewModel.loadTicker(symbol)
     }
 
-    // API 응답 반영
+    // 🔥 Ticker 값 반영
     LaunchedEffect(uiState) {
-        if (uiState is CoinUiState.Success) {
-            val data = (uiState as CoinUiState.Success).data
-            if (data is MarketData) {
-                price = data.trade_price
-                total = (amount.toDoubleOrNull() ?: 0.0) * price
-            }
+        if (uiState is CoinDetailState.Success) {
+            val ticker = (uiState as CoinDetailState.Success).data
+
+            price = ticker.trade_price
+            total = (amount.toDoubleOrNull() ?: 0.0) * price
         }
     }
 
@@ -79,15 +76,14 @@ fun SellScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // 제목 - 코인명
             Text(
-                text = symbol,
+                text = symbol.uppercase(),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            // 박스 영역
+            // 가격 박스
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -97,7 +93,6 @@ fun SellScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
 
-                    // 수량
                     TradeInputRow(
                         label = "수량",
                         value = amount.ifBlank { "0" },
@@ -105,14 +100,12 @@ fun SellScreen(
                         bold = true
                     )
 
-                    // 현재가
                     TradeInputRow(
                         label = "가격",
                         value = String.format("%,.0f", price),
                         unit = "KRW"
                     )
 
-                    // 총액
                     TradeInputRow(
                         label = "총액",
                         value = String.format("%,.0f", total),
@@ -124,7 +117,6 @@ fun SellScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // 퍼센트 선택
             PercentSelector { percent ->
                 val pct = percent.replace("%", "").toInt()
                 val calc = pct / 100.0
@@ -134,27 +126,17 @@ fun SellScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // 숫자패드
             TradeNumberPad { key ->
                 when (key) {
-                    "←" -> {
-                        amount = amount.dropLast(1)
-                    }
-                    "00" -> {
-                        // 기존 값이 비어있으면 00 입력 X
-                        if (amount.isNotEmpty()) amount += "00"
-                    }
-                    else -> { // 숫자
-                        amount += key
-                    }
+                    "←" -> amount = amount.dropLast(1)
+                    "00" -> if (amount.isNotEmpty()) amount += "00"
+                    else -> amount += key
                 }
-
                 total = (amount.toDoubleOrNull() ?: 0.0) * price
             }
 
             Spacer(Modifier.height(20.dp))
 
-            // 매도 버튼
             Button(
                 onClick = { onSellConfirm() },
                 modifier = Modifier

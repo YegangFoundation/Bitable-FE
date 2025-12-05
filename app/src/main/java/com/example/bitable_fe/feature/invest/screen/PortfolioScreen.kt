@@ -26,13 +26,15 @@ fun PortfolioScreen(
     onClickDeposit: () -> Unit,
     onClickDetail: (String) -> Unit
 ) {
-    val accountId by preferencesViewModel.userIdFlow.collectAsState(initial = null)
     val summary = vm.uiState.collectAsState().value
     val holdings = vm.holdings.collectAsState().value
-
-    LaunchedEffect(Unit) {
-        vm.loadAll(accountId = accountId!!)
+    val accountId by preferencesViewModel.userIdFlow.collectAsState(initial = -1L)
+    LaunchedEffect(accountId) {
+        if (accountId != -1L){
+            vm.loadAll(accountId = accountId)
+        }
     }
+
 
     Column(
         modifier = Modifier

@@ -28,11 +28,8 @@ fun VoiceFloatingButton(
 ) {
     val context = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
-
-    val audioFile = remember {
-        File(context.cacheDir, "voice_${System.currentTimeMillis()}.mp4")
-    }
-    val recorder = remember { VoiceRecorder(audioFile) }
+    var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
+    var audioFile by remember { mutableStateOf<File?>(null) }
 
     FloatingActionButton(
         onClick = {
@@ -44,24 +41,42 @@ fun VoiceFloatingButton(
                 permission
             ) == PackageManager.PERMISSION_GRANTED
 
+            // 2️⃣ 권한 없으면 요청
             if (!granted) {
-                // 2️⃣ 권한 요청
-                ActivityCompat.requestPermissions(
-                    context as Activity,
-                    arrayOf(permission),
-                    1000
-                )
-                return@FloatingActionButton  // 권한 없으면 녹음 시작 X
+                (context as? Activity)?.let {
+                    ActivityCompat.requestPermissions(
+                        it,
+                        arrayOf(permission),
+                        1000
+                    )
+                }
+                return@FloatingActionButton
             }
 
-            // 3️⃣ 권한이 있을 때만 녹음 기능 실행
+            // 3️⃣ 권한 있을 때만 녹음 기능 동작
             if (!isRecording) {
-                recorder.start()
+                // 🔥 매번 새 파일 생성
+                val file = File(context.cacheDir, "voice_${System.currentTimeMillis()}.mp4")
+                audioFile = file
+
+                // 🔥 녹음기 새로 생성
+                recorder = VoiceRecorder(file).also {
+                    it.start()
+                }
                 isRecording = true
+
             } else {
-                recorder.stop()
+                // 🔥 녹음 종료
+                recorder?.stop()
                 isRecording = false
-                viewModel.sendRecordedAudio(userId, audioFile)
+
+                // 🔥 서버로 업로드
+                audioFile?.let {
+                    viewModel.sendRecordedAudio(userId, it)
+                }
+
+                // cleanup
+                recorder = null
             }
         },
         containerColor = if (isRecording) Color.Red else Color(0xFF006AFF),

@@ -51,7 +51,6 @@ fun DepositMainScreen(
         if (accountId != -1L){
             vm.loadPortfolio(accountId)
         }
-
     }
 
     if (ui == null) {
