@@ -3,6 +3,7 @@ package com.example.bitable_fe.core.ui.component
 import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
@@ -77,6 +78,9 @@ fun VoiceFloatingButton(
 
                 // cleanup
                 recorder = null
+
+                val toast = Toast.makeText(context, "작업 완료", 3)
+                toast.show()
             }
         },
         containerColor = if (isRecording) Color.Red else Color(0xFF006AFF),

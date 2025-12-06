@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.network.response.MarketData
+import com.example.bitable_fe.core.network.response.OrderResponse
 import com.example.bitable_fe.core.ui.state.CoinUiState
 import com.example.bitable_fe.core.ui.viewmodel.CoinViewModel
 import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
@@ -20,20 +21,28 @@ import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 import com.example.bitable_fe.core.ui.state.CoinDetailState
+import com.example.bitable_fe.core.ui.state.OrderUiState
 import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
+import com.example.bitable_fe.core.ui.viewmodel.OrderViewModel
+import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
 
 
 @Composable
 fun BuyScreen(
     symbol: String,
     coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
+    orderViewModel: OrderViewModel = hiltViewModel(),
+    userPreferencesViewModel: UserPreferencesViewModel = hiltViewModel()
 ) {
     val uiState by coinDetailViewModel.tickerState.collectAsState()
+    val orderState by orderViewModel.state.collectAsState()
 
     // 유저 입력값
     var amount by remember { mutableStateOf("") }   // 수량
-    var price by remember { mutableStateOf(0.0) }   // 현재가
-    var total by remember { mutableStateOf(0.0) }   // 총액
+    var price by remember { mutableDoubleStateOf(0.0) }   // 현재가
+    var total by remember { mutableDoubleStateOf(0.0) }   // 총액
+
+    val accountId by userPreferencesViewModel.userIdFlow.collectAsState(initial = -1L)
 
     // 🔥 티커 호출로 가격 데이터 가져오기
     LaunchedEffect(symbol) {
@@ -47,6 +56,13 @@ fun BuyScreen(
 
             price = ticker.trade_price
             total = (amount.toDoubleOrNull() ?: 0.0) * price
+        }
+    }
+
+    LaunchedEffect(orderState) {
+        if (orderState is OrderUiState.Success) {
+            val res = (orderState as OrderUiState.Success).data as OrderResponse
+            println("✅ 매수 성공! 주문번호 = ${res.orderId}")
         }
     }
 
@@ -133,7 +149,15 @@ fun BuyScreen(
             // 🔥 매수 버튼
             Button(
                 onClick = {
-                    // TODO: 매수 API 연동
+                    val amountKrw = total
+
+                    if (amountKrw > 0) {
+                        orderViewModel.buy(
+                            accountId = accountId,
+                            symbol = symbol,
+                            amountKrw = amountKrw
+                        )
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()

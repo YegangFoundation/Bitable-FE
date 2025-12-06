@@ -1,6 +1,7 @@
 package com.example.bitable_fe.feature.onboarding.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -78,8 +79,11 @@ fun LoginScreen(
             modifier = Modifier
                 .width(345.dp)
                 .height(72.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, Color.Black)
         )
+
+        Spacer(Modifier.height(16.dp))
 
         // 이름 입력
         OutlinedTextField(
@@ -100,7 +104,7 @@ fun LoginScreen(
                 val name = nameState.text.toString()
 
                 if (phone.isNotBlank() && name.isNotBlank()) {
-                    userViewModel.createUser(phone, name)
+                    userViewModel.loginOrCreateUser(phone, name)
                 }
             },
             modifier = Modifier
