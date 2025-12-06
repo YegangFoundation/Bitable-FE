@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,9 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.bitable_fe.core.network.response.OrderResponse
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 import com.example.bitable_fe.core.ui.state.CoinDetailState
+import com.example.bitable_fe.core.ui.state.OrderUiState
 import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
+import com.example.bitable_fe.core.ui.viewmodel.OrderViewModel
+import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
 import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
 import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
@@ -40,27 +45,48 @@ import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
 fun SellScreen(
     symbol: String,
     coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
+    orderViewModel: OrderViewModel = hiltViewModel(),
+    userPref: UserPreferencesViewModel = hiltViewModel(),
     voiceViewModel: VoiceViewModel = hiltViewModel(),
-    onSellConfirm: () -> Unit = {},
+    onSellConfirm: () -> Unit = {}
 ) {
     val uiState by coinDetailViewModel.tickerState.collectAsState()
+    val orderState by orderViewModel.state.collectAsState()
 
     var amount by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf(0.0) }
+    var price by remember { mutableDoubleStateOf(0.0) }
     var total by remember { mutableStateOf(0.0) }
 
-    // 🔥 getCoin 대신 loadTicker 사용
+    // 🔥 사용자 계정 ID
+    val accountId by userPref.userIdFlow.collectAsState(initial = -1L)
+
+    // 🔥 티커 호출
     LaunchedEffect(symbol) {
         coinDetailViewModel.loadTicker(symbol)
     }
 
-    // 🔥 Ticker 값 반영
+    // 🔥 가격 반영
     LaunchedEffect(uiState) {
         if (uiState is CoinDetailState.Success) {
             val ticker = (uiState as CoinDetailState.Success).data
 
             price = ticker.trade_price
             total = (amount.toDoubleOrNull() ?: 0.0) * price
+        }
+    }
+
+    // 🔥 주문 성공/실패 처리
+    LaunchedEffect(orderState) {
+        when (orderState) {
+            is OrderUiState.Success -> {
+                val res = (orderState as OrderUiState.Success).data as OrderResponse
+                println("✅ 매도 성공! 주문번호 = ${res.orderId}")
+                onSellConfirm()
+            }
+            is OrderUiState.Error -> {
+                println("❌ 매도 실패: ${(orderState as OrderUiState.Error).msg}")
+            }
+            else -> {}
         }
     }
 
@@ -137,8 +163,19 @@ fun SellScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            // 🔥 매도 버튼
             Button(
-                onClick = { onSellConfirm() },
+                onClick = {
+                    val qty = amount.toDoubleOrNull() ?: 0.0
+
+                    if (accountId != null && qty > 0) {
+                        orderViewModel.sell(
+                            accountId = accountId!!,
+                            symbol = symbol,
+                            quantity = qty
+                        )
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

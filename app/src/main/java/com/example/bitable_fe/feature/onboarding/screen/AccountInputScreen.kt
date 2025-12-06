@@ -3,6 +3,7 @@ package com.example.bitable_fe.feature.onboarding.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
@@ -34,13 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.R
 import com.example.bitable_fe.core.data.model.Bank
+import com.example.bitable_fe.core.ui.theme.CustomTypography
 import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
 import com.example.bitable_fe.core.ui.viewmodel.UserViewModel
 
@@ -85,12 +90,21 @@ fun AccountInputScreen(
         Column(
             Modifier
                 .padding(innerPadding)
-                .padding(horizontal = 20.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.weight(0.5f))
+            Text(
+                text = "계좌 정보 입력",
+                style = CustomTypography.titleLarge.copy(fontSize = 32.sp, fontWeight = FontWeight.ExtraBold),
+                color = Color.Black
+            )
 
             Text(
                 text = "해당 계좌를 통해 KRW 입출금",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray),
+                fontSize = 20.sp
             )
 
             Spacer(Modifier.height(28.dp))
@@ -101,6 +115,7 @@ fun AccountInputScreen(
                 onValueChange = { accountNumber = it },
                 placeholder = { Text("계좌번호 입력") },
                 modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
             )
 
             Spacer(Modifier.height(14.dp))
@@ -108,7 +123,8 @@ fun AccountInputScreen(
             // 은행 선택 버튼
             OutlinedButton(
                 onClick = { showSheet = true },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp)),
                 border = BorderStroke(1.dp, Color.LightGray),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.White
@@ -123,7 +139,7 @@ fun AccountInputScreen(
             }
 
             Spacer(Modifier.height(30.dp))
-
+            Spacer(Modifier.weight(1f))
             // 다음 버튼
             Button(
                 onClick = {
@@ -132,7 +148,7 @@ fun AccountInputScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp),
+                    .height(72.dp),
                 enabled = accountNumber.isNotBlank() && selectedBank != null && accountId != -1L
             ) {
                 Text("다음")
@@ -175,3 +191,4 @@ fun AccountInputScreen(
         }
     }
 }
+

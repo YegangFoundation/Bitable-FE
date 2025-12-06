@@ -52,4 +52,29 @@ class UserViewModel @Inject constructor(
 
     fun updateSettings(userId: Long, req: UpdateSettingsRequest) =
         emit { repo.updateSettings(userId, req) }
+
+    fun loginOrCreateUser(phone: String, name: String) {
+        viewModelScope.launch {
+            _state.value = UserUiState.Loading
+
+            // 1️⃣ 먼저 getUserByPhone
+            val existing = runCatching { repo.getUserByPhone(phone) }.getOrNull()
+
+            if (existing != null) {
+                // 2️⃣ 이미 사용자 존재
+                _state.value = UserUiState.Success(existing)
+                return@launch
+            }
+
+            // 3️⃣ 존재하지 않으면 createUser
+            val created = runCatching { repo.createUser(phone, name) }.getOrNull()
+
+            if (created != null) {
+                _state.value = UserUiState.Success(created)
+            } else {
+                _state.value = UserUiState.Error("회원가입 실패")
+            }
+        }
+    }
+
 }
