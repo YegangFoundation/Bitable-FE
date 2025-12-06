@@ -24,6 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,14 +60,18 @@ fun LoginScreen(
     }
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .semantics {
+                contentDescription = "로그인 화면"
+            },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Image(
             painter = painterResource(R.drawable.logo),
-            contentDescription = null,
+            contentDescription = "비트에이블 로고",
             modifier = Modifier
                 .height(100.dp)
                 .width(260.dp)
@@ -81,6 +89,9 @@ fun LoginScreen(
                 .height(72.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .border(1.dp, Color.Black)
+                .semantics {
+                    contentDescription = "전화번호 입력 필드"
+                }
         )
 
         Spacer(Modifier.height(16.dp))
@@ -94,6 +105,9 @@ fun LoginScreen(
                 .width(345.dp)
                 .height(72.dp)
                 .clip(RoundedCornerShape(16.dp))
+                .semantics {
+                    contentDescription = "이름 입력 필드"
+                }
         )
 
         Spacer(Modifier.height(48.dp))
@@ -110,7 +124,11 @@ fun LoginScreen(
             modifier = Modifier
                 .width(345.dp)
                 .height(64.dp)
-                .clip(RoundedCornerShape(16.dp)),
+                .clip(RoundedCornerShape(16.dp))
+                .semantics {
+                    contentDescription = "시작 버튼"
+                    role = Role.Button
+                },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF3181F4)
             )

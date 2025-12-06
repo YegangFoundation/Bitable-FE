@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -81,12 +83,20 @@ fun VoiceSpeedSettingScreen(
         Text(
             text = "음성 속도 설정",
             fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier
+                .semantics {
+                    contentDescription = "음성 속도 설정"
+                }
         )
 
         Text(
             text = "정보를 읽어주는 TTS 음성 속도",
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            modifier = Modifier
+                .semantics {
+                    contentDescription = "정보를 읽어주는 TTS 음성 속도"
+                }
         )
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -106,7 +116,11 @@ fun VoiceSpeedSettingScreen(
                 )
                 Text(
                     text = "현재 설정된 음성 속도",
-                    fontSize = 24.sp
+                    fontSize = 24.sp,
+                    modifier = Modifier
+                        .semantics {
+                            contentDescription = "현재 설정된 음성 속도, $speed"
+                        }
                 )
             }
         }
@@ -131,8 +145,16 @@ fun VoiceSpeedSettingScreen(
                 .padding(horizontal = 30.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("느리게", fontSize = 24.sp, color = Color.Gray)
-            Text("빠르게", fontSize = 24.sp, color = Color.Gray)
+            Text(
+                "느리게", fontSize = 24.sp, color = Color.Gray, modifier = Modifier
+                    .semantics {
+                        contentDescription = "느리게"
+                    })
+            Text(
+                "빠르게", fontSize = 24.sp, color = Color.Gray, modifier = Modifier
+                    .semantics {
+                        contentDescription = "빠르게"
+                    })
         }
 
         Spacer(modifier = Modifier.weight(1f))
@@ -147,7 +169,10 @@ fun VoiceSpeedSettingScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .height(56.dp),
+                .height(56.dp)
+                .semantics{
+                    contentDescription = "다음 버튼"
+                },
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF3181F4)
