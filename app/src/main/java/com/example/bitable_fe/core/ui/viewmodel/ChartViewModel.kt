@@ -10,26 +10,3 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class ChartViewModel @Inject constructor(
-    private val repo: ChartRepository
-) : ViewModel() {
-
-    private val _state = MutableStateFlow<ChartUiState>(ChartUiState.Idle)
-    val state = _state.asStateFlow()
-
-    fun getOrderBook(symbol: String) =
-        emit { repo.getOrderBook(symbol) }
-
-    fun getChartAnalysis(symbol: String, interval: String?) =
-        emit { repo.getChartAnalysis(symbol, interval) }
-
-    private fun emit(block: suspend () -> Any) {
-        viewModelScope.launch {
-            _state.value = ChartUiState.Loading
-            runCatching { block() }
-                .onSuccess { _state.value = ChartUiState.Success(it) }
-                .onFailure { _state.value = ChartUiState.Error(it.message ?: "") }
-        }
-    }
-}

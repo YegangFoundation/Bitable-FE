@@ -16,28 +16,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.network.response.MarketData
+import com.example.bitable_fe.core.ui.component.AudioPlayerUtil
 import com.example.bitable_fe.core.ui.state.CoinDetailState
 import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
 import com.example.bitable_fe.feature.trade.screen.component.BottomTradeButtons
 import com.example.bitable_fe.feature.trade.screen.component.ChartPeriodTabs
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
+import com.example.bitable_fe.core.ui.state.VoiceUiState
 import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
+import com.example.bitable_fe.feature.invest.screen.component.ChartBox
 
 @Composable
 fun CoinDetailScreen(
     coinName: String,
     coinDetailViewModel: CoinDetailViewModel = hiltViewModel(),
-    onListenSummaryClick: () -> Unit = {},
+    voiceVm: VoiceViewModel = hiltViewModel(),
     onSellClick: (String) -> Unit = {},
     onBuyClick: (String) -> Unit = {}
 ) {
     val period = coinDetailViewModel.period
     var isFavorite by remember { mutableStateOf(false) }
+    val chartAnalysis by coinDetailViewModel.chartAnalysis.collectAsState()
+    val voiceState by voiceVm.state.collectAsState()
 
     LaunchedEffect(coinName) {
         coinDetailViewModel.loadTicker(coinName)
@@ -51,7 +58,10 @@ fun CoinDetailScreen(
                 Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 12.dp)
+                    .semantics{
+                        contentDescription = "코인 정보"
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -109,7 +119,7 @@ fun CoinDetailScreen(
 
                             Icon(
                                 imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                                contentDescription = null,
+                                contentDescription = "좋아요",
                                 tint = if (isFavorite) Color(0xFFFF3A5F) else Color.Gray,
                                 modifier = Modifier
                                     .size(34.dp)
@@ -129,23 +139,30 @@ fun CoinDetailScreen(
 
                     // ▣ 차트 영역(임시)
                     item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp)
-                                .background(Color(0xFFEAF0FF), RoundedCornerShape(12.dp))
-                        )
+                        val candles = coinDetailViewModel.chartState.collectAsState().value
+                        val prices = candles.mapNotNull { it.trade_price }
+
+                        ChartBox(values = prices)
                     }
 
                     // ▣ 차트 요약 버튼
                     item {
                         Button(
-                            onClick = onListenSummaryClick,
+                            onClick = {
+                                coinDetailViewModel.loadChartAnalysis()
+
+                                if (chartAnalysis.isNotBlank()) {
+                                    voiceVm.tts(chartAnalysis)
+                                }
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Text("차트 요약 듣기", color = Color.White, fontSize = 18.sp)
+                            Text("차트 요약 듣기", color = Color.White, fontSize = 18.sp,
+                                modifier = Modifier.semantics{
+                                    contentDescription = "차트 요약 듣기"
+                                })
                         }
                     }
 
@@ -157,6 +174,16 @@ fun CoinDetailScreen(
                     item { Spacer(Modifier.height(80.dp)) }
                 }
             }
+        }
+    }
+
+    LaunchedEffect(voiceState) {
+        when (voiceState) {
+            is VoiceUiState.Success -> {
+                val audio = (voiceState as VoiceUiState.Success).data as ByteArray
+                AudioPlayerUtil.playByteArray(audio)
+            }
+            else -> Unit
         }
     }
 }

@@ -12,6 +12,7 @@ import com.example.bitable_fe.core.data.model.PortfolioUi
 import com.example.bitable_fe.core.data.repository.iface.HoldingsRepository
 import com.example.bitable_fe.core.data.repository.iface.PortfolioRepository
 import com.example.bitable_fe.core.network.response.HoldingResponse
+import com.example.bitable_fe.core.network.response.PortfolioHistoryResponse
 import com.example.bitable_fe.core.network.response.PortfolioSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -33,9 +34,50 @@ class PortfolioViewModel @Inject constructor(
     private val _holdings = MutableStateFlow<List<HoldingResponse>>(emptyList())
     val holdings = _holdings.asStateFlow()
 
+    private val _historyState = MutableStateFlow<List<PortfolioHistoryResponse>>(emptyList())
+    val historyState = _historyState.asStateFlow()
+
+    private val _loading = MutableStateFlow(false)
+    val loading = _loading.asStateFlow()
+    private val _chartValues = MutableStateFlow<List<Double>>(emptyList())
+    val chartValues = _chartValues.asStateFlow()
+    private val _period = MutableStateFlow("일")
+    val period = _period.asStateFlow()
+    private val _historySummary = MutableStateFlow("")
+    val historySummary = _historySummary.asStateFlow()
+    fun setPeriod(p: String, accountId: Long) {
+        _period.value = p
+        val interval = when (p) {
+            "일" -> "1d"
+            "주" -> "1w"
+            "월" -> "1m"
+            else -> "1d"
+        }
+        loadPortfolioHistory(accountId, interval)
+    }
+    fun loadPortfolioHistory(accountId: Long, interval: String = "1d") {
+        viewModelScope.launch {
+            _loading.value = true
+
+            val response = repo.getPortfolioHistory(accountId, interval)
+
+            response.data?.let { data ->
+                data.history.let { list ->
+                    _historyState.value = list
+                    _chartValues.value = list.map { it.totalBalanceKrw }
+                }
+
+                // 🔥 요약 문장 저장
+                _historySummary.value = data.summary ?: ""
+            }
+
+            _loading.value = false
+        }
+    }
     fun loadAll(accountId: Long) {
         loadPortfolio(accountId)
         loadHoldings(accountId)
+        loadPortfolioHistory(accountId, _period.value)
     }
 
     fun loadPortfolio(accountId: Long) {
