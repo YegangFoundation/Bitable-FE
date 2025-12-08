@@ -45,9 +45,6 @@ fun NavGraphBuilder.investNavGraph(
 
     composable<InvestRoute.ProfitRoute> {
         ProfitScreen(
-            onListenClick = {
-                TODO()
-            }
         )
     }
 

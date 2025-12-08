@@ -18,7 +18,7 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://10.0.2.2:8080" // 서버 주소
+    private const val BASE_URL = "http://52.79.235.192/" // 서버 주소
 
     val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY  // BODY = 요청/응답 전체 로그 출력

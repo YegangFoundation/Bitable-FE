@@ -26,23 +26,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.bitable_fe.core.ui.component.AudioPlayerUtil
+import com.example.bitable_fe.core.ui.state.VoiceUiState
+import com.example.bitable_fe.core.ui.viewmodel.PortfolioViewModel
 import com.example.bitable_fe.core.ui.viewmodel.ProfitViewModel
+import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
+import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import com.example.bitable_fe.feature.invest.screen.component.ChartBox
 
 
 @Composable
 fun ProfitScreen(
     vm: ProfitViewModel = hiltViewModel(),
-    onListenClick: () -> Unit = {}
+    portVm: PortfolioViewModel = hiltViewModel(),
+    preferencesViewModel: UserPreferencesViewModel = hiltViewModel(),
+    voiceVm: VoiceViewModel = hiltViewModel()
 ) {
     val summary by vm.summary.collectAsState()
     val holdings by vm.holdings.collectAsState()
     val avgInvest by vm.avgInvest.collectAsState()
-    val chart by vm.chartData.collectAsState()
-    val period by vm.period.collectAsState()
+    val chart by portVm.chartValues.collectAsState()
+    val period by portVm.period.collectAsState()
+    val accountId by preferencesViewModel.userIdFlow.collectAsState(initial = -1L)
+    val summaryText by portVm.historySummary.collectAsState()
+    val voiceState by voiceVm.state.collectAsState()
 
-    LaunchedEffect(Unit) {
-        vm.loadAll()
+    LaunchedEffect(accountId) {
+        if (accountId != -1L){
+            vm.loadAll(accountId)
+            portVm.loadAll(accountId)
+        }
     }
 
 
@@ -78,9 +91,16 @@ fun ProfitScreen(
                     color = if (period == it) Color.Black else Color.Gray,
                     fontSize = 16.sp,
                     modifier = Modifier.clickable {
-                        vm.setPeriod(it)
-                        vm.generateDummyChart()
+                        portVm.setPeriod(it, accountId)
+                        val interval = when (it) {
+                            "일" -> "1d"
+                            "주" -> "1w"
+                            "월" -> "1m"
+                            else -> "1d"
+                        }
+                        portVm.loadPortfolioHistory(accountId, interval)
                     }
+                        .weight(1f)
                 )
             }
         }
@@ -95,10 +115,14 @@ fun ProfitScreen(
         Spacer(Modifier.height(16.dp))
 
         Button(
-            onClick = onListenClick,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),
-            shape = RoundedCornerShape(10.dp)
+            shape = RoundedCornerShape(10.dp),
+            onClick = {
+                if (summaryText.isNotBlank()) {
+                    voiceVm.tts(summaryText)
+                }
+            }
         ) {
             Text("손익 리포트 요약 듣기", color = Color.White)
         }
@@ -149,4 +173,13 @@ fun ProfitScreen(
         }
     }
 
+    LaunchedEffect(voiceState) {
+        when (voiceState) {
+            is VoiceUiState.Success -> {
+                val audio = (voiceState as VoiceUiState.Success).data as ByteArray
+                AudioPlayerUtil.playByteArray(audio)
+            }
+            else -> Unit
+        }
+    }
 }

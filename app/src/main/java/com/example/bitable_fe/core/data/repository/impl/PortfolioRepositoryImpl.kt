@@ -2,7 +2,9 @@ package com.example.bitable_fe.core.data.repository.impl
 
 import com.example.bitable_fe.core.data.repository.iface.PortfolioRepository
 import com.example.bitable_fe.core.network.api.PortfolioApi
+import com.example.bitable_fe.core.network.response.ApiResponse
 import com.example.bitable_fe.core.network.response.HoldingResponse
+import com.example.bitable_fe.core.network.response.PortfolioHistoryListResponse
 import com.example.bitable_fe.core.network.response.PortfolioSummary
 import javax.inject.Inject
 
@@ -16,5 +18,12 @@ class PortfolioRepositoryImpl @Inject constructor(
 
     override suspend fun getHoldings(accountId: Long): List<HoldingResponse> {
         return api.getHoldingsByAccount(accountId).data!!
+    }
+
+    override suspend fun getPortfolioHistory(
+        accountId: Long,
+        interval: String
+    ): ApiResponse<PortfolioHistoryListResponse> {
+        return api.getPortfolioHistory(accountId, interval)
     }
 }

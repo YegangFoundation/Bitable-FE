@@ -3,28 +3,12 @@ package com.example.bitable_fe.feature.invest.screen
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,24 +19,31 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.data.model.CoinDetailUi
 import com.example.bitable_fe.core.data.model.PortfolioUi
-import com.example.bitable_fe.core.network.response.HoldingResponse
+import com.example.bitable_fe.core.ui.component.AudioPlayerUtil
+import com.example.bitable_fe.core.ui.state.VoiceUiState
 import com.example.bitable_fe.core.ui.viewmodel.PortfolioViewModel
 import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
-
+import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 
 @Composable
 fun DepositMainScreen(
     vm: PortfolioViewModel = hiltViewModel(),
-    preferencesViewModel: UserPreferencesViewModel = hiltViewModel()
+    preferencesViewModel: UserPreferencesViewModel = hiltViewModel(),
+    voiceVm: VoiceViewModel = hiltViewModel()
 ) {
     val ui = vm.uiState.collectAsState().value
+    val summary by vm.historySummary.collectAsState()
     val accountId by preferencesViewModel.userIdFlow.collectAsState(initial = -1L)
+    val voiceState by voiceVm.state.collectAsState()
+
+    // 초기 로드
     LaunchedEffect(accountId) {
-        if (accountId != -1L){
-            vm.loadPortfolio(accountId)
+        if (accountId != -1L) {
+            vm.loadAll(accountId)
         }
     }
 
+    // 로딩 처리
     if (ui == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -60,78 +51,34 @@ fun DepositMainScreen(
         return
     }
 
-    PortfolioContent(ui)
-}
-
-
-@Composable
-fun LabeledValue(label: String, value: String, isProfit: Boolean? = null) {
-    val color = when (isProfit) {
-        true -> Color(0xFFE53935)
-        false -> Color(0xFF1E88E5)
-        else -> Color.Unspecified
+    // 음성 TTS 재생 처리
+    LaunchedEffect(voiceState) {
+        when (voiceState) {
+            is VoiceUiState.Success -> {
+                val audio = (voiceState as VoiceUiState.Success).data as ByteArray
+                AudioPlayerUtil.playByteArray(audio)
+            }
+            else -> Unit
+        }
     }
 
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(label, color = Color.Gray, fontSize = 14.sp)
-        Text(value, color = color, fontWeight = FontWeight.Medium, fontSize = 16.sp)
-    }
-}
-
-@Composable
-fun CoinDetailCard(coin: CoinDetailUi) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
-    ) {
-
-        Text(
-            "${coin.name} ${coin.symbol}",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 12.dp)
-        )
-
-        // 평가 손익
-        LabeledValue(
-            label = "평가 손익",
-            value = "%,d".format(coin.profit.toInt()),
-            isProfit = coin.profit >= 0
-        )
-
-        // 수익률
-        LabeledValue(
-            label = "수익률",
-            value = String.format("%.2f%%", coin.profitRate),
-            isProfit = coin.profitRate >= 0
-        )
-
-        // 보유수량
-        LabeledValue(
-            label = "보유수량",
-            value = "${coin.quantity} ${coin.symbol}"
-        )
-
-        // 평가금액
-        LabeledValue(
-            label = "평가금액",
-            value = "%,d KRW".format(coin.evalAmount.toInt())
-        )
-
-        // 매수금액
-        LabeledValue(
-            label = "매수금액",
-            value = "%,d KRW".format(coin.buyAmount.toInt())
-        )
-    }
+    PortfolioContent(
+        ui = ui,
+        summary = summary,
+        onListenClick = {
+            if (summary.isNotBlank()) {
+                voiceVm.tts(summary)
+            }
+        }
+    )
 }
 
 @Composable
-fun PortfolioContent(state: PortfolioUi) {
+fun PortfolioContent(
+    ui: PortfolioUi,
+    summary: String,
+    onListenClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -141,14 +88,15 @@ fun PortfolioContent(state: PortfolioUi) {
 
         Text("총 보유 자산", fontSize = 16.sp, color = Color.Gray)
         Text(
-            text = "%,d".format(state.totalBalance.toInt()),
+            text = "%,d".format(ui.totalBalance.toInt()),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        // 🔊 요약 듣기 버튼
         Button(
-            onClick = { /* TODO */ },
+            onClick = onListenClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -160,7 +108,7 @@ fun PortfolioContent(state: PortfolioUi) {
         Divider(color = Color(0xFFE5E5E5), thickness = 8.dp)
         Spacer(Modifier.height(20.dp))
 
-        SummarySection(state)
+        SummarySection(ui)
 
         Spacer(Modifier.height(20.dp))
         Divider(color = Color(0xFFE5E5E5), thickness = 8.dp)
@@ -169,16 +117,17 @@ fun PortfolioContent(state: PortfolioUi) {
         Text("보유자산 포트폴리오", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(8.dp))
 
-        PieChartSection(state)
+        PieChartSection(ui)
 
         Spacer(Modifier.height(20.dp))
 
-        state.coinDetails.forEach { coin ->
+        ui.coinDetails.forEach { coin ->
             CoinDetailCard(coin)
             Spacer(Modifier.height(16.dp))
         }
     }
 }
+
 @Composable
 fun SummarySection(state: PortfolioUi) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -284,7 +233,6 @@ fun PieChartSection(state: PortfolioUi) {
             }
         }
 
-        // 중앙 텍스트
         Text(
             "보유비중",
             fontSize = 16.sp,
@@ -317,5 +265,68 @@ fun PieChartSection(state: PortfolioUi) {
                 color = Color.DarkGray
             )
         }
+    }
+}
+
+@Composable
+fun CoinDetailCard(coin: CoinDetailUi) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+    ) {
+
+        Text(
+            "${coin.name} ${coin.symbol}",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        LabeledValue(
+            label = "평가 손익",
+            value = "%,d".format(coin.profit.toInt()),
+            isProfit = coin.profit >= 0
+        )
+
+        LabeledValue(
+            label = "수익률",
+            value = String.format("%.2f%%", coin.profitRate),
+            isProfit = coin.profitRate >= 0
+        )
+
+        LabeledValue(
+            label = "보유수량",
+            value = "${coin.quantity} ${coin.symbol}"
+        )
+
+        LabeledValue(
+            label = "평가금액",
+            value = "%,d KRW".format(coin.evalAmount.toInt())
+        )
+
+        LabeledValue(
+            label = "매수금액",
+            value = "%,d KRW".format(coin.buyAmount.toInt())
+        )
+    }
+}
+
+@Composable
+fun LabeledValue(label: String, value: String, isProfit: Boolean? = null) {
+    val color = when (isProfit) {
+        true -> Color(0xFFE53935)
+        false -> Color(0xFF1E88E5)
+        else -> Color.Unspecified
+    }
+
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, color = Color.Gray, fontSize = 14.sp)
+        Text(value, color = color, fontWeight = FontWeight.Medium, fontSize = 16.sp)
     }
 }

@@ -36,9 +36,6 @@ fun NavGraphBuilder.tradeNavGraph(
 
         CoinDetailScreen(
             coinName = args.coinName,
-            onListenSummaryClick = {
-                // TODO("요약 듣기 작업")
-            },
             onBuyClick = {
                 navController.navigate(TradeRoute.BuyRoute(args.coinName))
             },

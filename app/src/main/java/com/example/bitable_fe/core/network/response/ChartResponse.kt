@@ -1,20 +1,36 @@
 package com.example.bitable_fe.core.network.response
 
 import kotlinx.serialization.Serializable
-
 @Serializable
-data class OrderBookAnalysisResponse(
-    val bidStrength: Double,
-    val askStrength: Double,
-    val imbalance: Double,
-    val summary: String
+data class OrderbookAnalysisResponse(
+    val symbol: String,
+    val analysis: String,
+    val infoLevel: Int
 )
 
 @Serializable
 data class ChartAnalysisResponse(
+    val symbol: String,
     val interval: String,
-    val trend: String,
-    val supportLevel: Double? = null,
-    val resistanceLevel: Double? = null,
-    val summary: String
+    val analysis: String,
+    val infoLevel: Int
+)
+
+@Serializable
+data class CandleResponse(
+    val market: String? = null,
+    val candle_date_time_utc: String? = null,
+    val candle_date_time_kst: String? = null,
+
+    val opening_price: Double? = null,
+    val high_price: Double? = null,
+    val low_price: Double? = null,
+    val trade_price: Double? = null,
+
+    val timestamp: Long? = null,
+    val candle_acc_trade_price: Double? = null,
+    val candle_acc_trade_volume: Double? = null,
+
+    val change_price: Double? = null,
+    val change_rate: Double? = null
 )
