@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +58,27 @@ fun LoginScreen(
             userPref.saveUserId(res.userId)
             loginClicked()
         }
+    }
+
+    // ⭐ 전화번호 자동 하이픈 포맷팅
+    LaunchedEffect(phoneState) {
+        snapshotFlow { phoneState.text.toString() }
+            .collect { raw ->
+                val digits = raw.filter { it.isDigit() }
+
+                val formatted = when {
+                    digits.length <= 3 -> digits
+                    digits.length <= 7 -> digits.replace(Regex("(\\d{3})(\\d+)"), "$1-$2")
+                    digits.length <= 11 -> digits.replace(Regex("(\\d{3})(\\d{4})(\\d+)"), "$1-$2-$3")
+                    else -> digits.take(11).replace(Regex("(\\d{3})(\\d{4})(\\d+)"), "$1-$2-$3")
+                }
+
+                if (raw != formatted) {
+                    phoneState.edit {
+                        replace(0, length, formatted)
+                    }
+                }
+            }
     }
 
     Column(
@@ -140,6 +162,7 @@ fun LoginScreen(
         }
     }
 }
+
 
 @Preview
 @Composable

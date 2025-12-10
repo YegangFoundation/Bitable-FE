@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,6 +59,8 @@ fun DepositMainScreen(
             is VoiceUiState.Success -> {
                 val audio = (voiceState as VoiceUiState.Success).data as ByteArray
                 AudioPlayerUtil.playByteArray(audio)
+
+                voiceVm.clearState()
             }
             else -> Unit
         }
@@ -132,74 +136,102 @@ fun PortfolioContent(
 fun SummarySection(state: PortfolioUi) {
     Column(modifier = Modifier.fillMaxWidth()) {
 
+        // ----- 총 매수 -----
+        val totalBuyStr = "%,d원".format(state.totalBalance.toInt())
+
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "총 매수 $totalBuyStr"
+                },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("총 매수", fontSize = 16.sp, color = Color.Gray)
-            Text("%,d".format(state.totalBalance.toInt()), fontSize = 16.sp)
+            Text(totalBuyStr, fontSize = 16.sp)
         }
 
         Spacer(Modifier.height(12.dp))
 
+        // ----- 총 평가 -----
+        val totalEvalStr = "%,d원".format(state.totalBalance.toInt())
+
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "총 평가 $totalEvalStr"
+                },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("총 평가", fontSize = 16.sp, color = Color.Gray)
-            Text("%,d".format(state.totalBalance.toInt()), fontSize = 16.sp)
+            Text(totalEvalStr, fontSize = 16.sp)
         }
 
         Spacer(Modifier.height(12.dp))
 
+        // ----- 평가 손익 -----
+        val profit = state.totalProfit
+        val isUp = profit >= 0
+        val profitColor = if (isUp) Color(0xFFE53935) else Color(0xFF1E88E5)
+        val profitStr = "%,d원".format(profit.toInt())
+        val profitIndicator = if (isUp) "상승" else "하락"
+
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "평가 손익 $profitStr $profitIndicator"
+                },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("평가 손익", fontSize = 16.sp, color = Color.Gray)
 
-            val profit = state.totalProfit
-            val isUp = profit >= 0
-            val color = if (isUp) Color(0xFFE53935) else Color(0xFF1E88E5)
-
             Row {
                 Text(
-                    text = "%,d".format(profit.toInt()),
+                    profitStr,
                     fontSize = 16.sp,
-                    color = color,
+                    color = profitColor,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (isUp) " ▲" else " ▼",
+                    if (isUp) " ▲" else " ▼",
                     fontSize = 16.sp,
-                    color = color
+                    color = profitColor
                 )
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
+        // ----- 수익률 -----
+        val rate = state.totalProfitRate
+        val rateStr = String.format("%.2f%%", rate)
+        val isRateUp = rate >= 0
+        val rateIndicator = if (isRateUp) "상승" else "하락"
+        val rateColor = if (isRateUp) Color(0xFFE53935) else Color(0xFF1E88E5)
+
         Row(
-            Modifier.fillMaxWidth(),
+            Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "수익률 $rateStr $rateIndicator"
+                },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("수익률", fontSize = 16.sp, color = Color.Gray)
 
-            val rate = state.totalProfitRate
-            val isUp = rate >= 0
-            val color = if (isUp) Color(0xFFE53935) else Color(0xFF1E88E5)
-
             Row {
                 Text(
-                    text = String.format("%.2f%%", rate),
-                    color = color,
+                    rateStr,
+                    color = rateColor,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = if (isUp) " ▲" else " ▼",
+                    if (isRateUp) " ▲" else " ▼",
                     fontSize = 16.sp,
-                    color = color
+                    color = rateColor
                 )
             }
         }
@@ -314,16 +346,35 @@ fun CoinDetailCard(coin: CoinDetailUi) {
 
 @Composable
 fun LabeledValue(label: String, value: String, isProfit: Boolean? = null) {
+
+    // ------ 색상 (기존 유지) ------
     val color = when (isProfit) {
         true -> Color(0xFFE53935)
         false -> Color(0xFF1E88E5)
         else -> Color.Unspecified
     }
 
+    // ------ TalkBack이 듣는 문장 구성 ------
+    val profitIndicator = when (isProfit) {
+        true -> "상승"
+        false -> "하락"
+        else -> ""   // 수익 항목이 아닐 때는 빈 문자열
+    }
+
+    // 최종 접근성 문장
+    val talkbackText =
+        if (profitIndicator.isNotEmpty())
+            "$label $value $profitIndicator"
+        else
+            "$label $value"
+
     Row(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 6.dp),
+            .padding(vertical = 6.dp)
+            .semantics {     // ★ TalkBack 문장 지정
+                contentDescription = talkbackText
+            },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(label, color = Color.Gray, fontSize = 14.sp)

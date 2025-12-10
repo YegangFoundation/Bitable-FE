@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -30,9 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.bitable_fe.core.network.response.OrderResponse
+import com.example.bitable_fe.core.ui.component.AudioPlayerUtil
 import com.example.bitable_fe.core.ui.component.VoiceFloatingButton
 import com.example.bitable_fe.core.ui.state.CoinDetailState
 import com.example.bitable_fe.core.ui.state.OrderUiState
+import com.example.bitable_fe.core.ui.state.VoiceUiState
 import com.example.bitable_fe.core.ui.viewmodel.CoinDetailViewModel
 import com.example.bitable_fe.core.ui.viewmodel.OrderViewModel
 import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
@@ -52,44 +56,60 @@ fun SellScreen(
 ) {
     val uiState by coinDetailViewModel.tickerState.collectAsState()
     val orderState by orderViewModel.state.collectAsState()
+    val voiceState by voiceViewModel.state.collectAsState()
+    var showDialog by remember { mutableStateOf(false) }
 
     var amount by remember { mutableStateOf("") }
     var price by remember { mutableDoubleStateOf(0.0) }
     var total by remember { mutableStateOf(0.0) }
 
-    // 🔥 사용자 계정 ID
     val accountId by userPref.userIdFlow.collectAsState(initial = -1L)
 
-    // 🔥 티커 호출
     LaunchedEffect(symbol) {
         coinDetailViewModel.loadTicker(symbol)
     }
 
-    // 🔥 가격 반영
     LaunchedEffect(uiState) {
         if (uiState is CoinDetailState.Success) {
             val ticker = (uiState as CoinDetailState.Success).data
-
             price = ticker.trade_price
             total = (amount.toDoubleOrNull() ?: 0.0) * price
         }
     }
 
-    // 🔥 주문 성공/실패 처리
     LaunchedEffect(orderState) {
-        when (orderState) {
-            is OrderUiState.Success -> {
-                val res = (orderState as OrderUiState.Success).data as OrderResponse
-                println("✅ 매도 성공! 주문번호 = ${res.orderId}")
-                onSellConfirm()
-            }
-            is OrderUiState.Error -> {
-                println("❌ 매도 실패: ${(orderState as OrderUiState.Error).msg}")
-            }
-            else -> {}
+        if (orderState is OrderUiState.Success) {
+
+            // 🔊 음성 출력
+            voiceViewModel.tts("주문이 체결되었습니다")
+
+            // 팝업 보여주기
+            showDialog = true
+
+            onSellConfirm() // 필요시 화면 이동 등
         }
     }
 
+    LaunchedEffect(voiceState) {
+        if (voiceState is VoiceUiState.Success) {
+            AudioPlayerUtil.playByteArray(
+                (voiceState as VoiceUiState.Success).data as ByteArray
+            )
+            voiceViewModel.clearState()
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) { Text("확인") }
+            },
+            title = { Text("주문 완료") },
+            text = { Text("주문이 성공적으로 체결되었습니다.") },
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
     Scaffold(
         floatingActionButton = { VoiceFloatingButton(voiceViewModel) }
     ) { padding ->
@@ -102,6 +122,7 @@ fun SellScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // 🔹 타이틀 (비율 없음)
             Text(
                 text = symbol.uppercase(),
                 fontSize = 22.sp,
@@ -109,16 +130,15 @@ fun SellScreen(
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            // 가격 박스
+            // 🔹 가격 박스 (중간 크기 비율)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1.8f)
                     .background(Color(0xFFF6F7F9), RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
-
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
                     TradeInputRow(
                         label = "수량",
                         value = amount.ifBlank { "0" },
@@ -141,36 +161,48 @@ fun SellScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
-            PercentSelector { percent ->
-                val pct = percent.replace("%", "").toInt()
-                val calc = pct / 100.0
-                amount = calc.toString()
-                total = price * calc
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            TradeNumberPad { key ->
-                when (key) {
-                    "←" -> amount = amount.dropLast(1)
-                    "00" -> if (amount.isNotEmpty()) amount += "00"
-                    else -> amount += key
+            // 🔹 퍼센트 선택 (작은 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.4f)
+            ) {
+                PercentSelector { percent ->
+                    val pct = percent.replace("%", "").toInt()
+                    val ratio = pct / 100.0
+                    amount = ratio.toString()
+                    total = price * ratio
                 }
-                total = (amount.toDoubleOrNull() ?: 0.0) * price
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(4.dp))
 
-            // 🔥 매도 버튼
+            // 🔹 키패드 (가장 큰 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1.1f)
+            ) {
+                TradeNumberPad { key ->
+                    when (key) {
+                        "←" -> amount = amount.dropLast(1)
+                        "00" -> if (amount.isNotEmpty()) amount += "00"
+                        else -> amount += key
+                    }
+                    total = (amount.toDoubleOrNull() ?: 0.0) * price
+                }
+            }
+
+
+            // 🔥 매도 버튼 (고정 높이)
             Button(
                 onClick = {
                     val qty = amount.toDoubleOrNull() ?: 0.0
-
-                    if (accountId != null && qty > 0) {
+                    if (qty > 0) {
                         orderViewModel.sell(
-                            accountId = accountId!!,
+                            accountId = accountId,
                             symbol = symbol,
                             quantity = qty
                         )
@@ -187,8 +219,6 @@ fun SellScreen(
             ) {
                 Text("매도", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
-
-            Spacer(Modifier.height(40.dp))
         }
     }
 }

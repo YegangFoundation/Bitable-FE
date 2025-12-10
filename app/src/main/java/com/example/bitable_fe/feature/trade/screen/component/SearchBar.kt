@@ -33,34 +33,49 @@ fun SearchBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(72.dp)
+            .height(56.dp)
             .border(
                 width = 1.dp,
                 color = Color.Gray,
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxSize()
         ) {
+
             Icon(Icons.Default.Search, contentDescription = "Search")
 
             Spacer(Modifier.width(12.dp))
 
-            if (text.isEmpty()) {
-                Text(
-                    "코인 이름 또는 심볼 검색",
-                    fontSize = 18.sp,
-                    color = Color.Gray
-                )
-            } else {
-                BasicTextField(
-                    value = text,
-                    onValueChange = onTextChange,
-                    modifier = Modifier.fillMaxWidth()
-                )
+            BasicTextField(
+                value = text,
+                onValueChange = onTextChange,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) { innerTextField ->
+
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+
+                    // Placeholder
+                    if (text.isEmpty()) {
+                        Text(
+                            "코인 이름 또는 심볼 검색",
+                            fontSize = 18.sp,
+                            color = Color.Gray
+                        )
+                    }
+
+                    innerTextField()
+                }
             }
         }
     }

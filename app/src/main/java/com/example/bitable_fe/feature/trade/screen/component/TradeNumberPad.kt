@@ -37,13 +37,13 @@ fun TradeNumberPad(onClick: (String) -> Unit) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(70.dp)
+                            .height(38.dp)
                             .clickable { onClick(key) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = key,
-                            fontSize = 32.sp,
+                            fontSize = 30.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }

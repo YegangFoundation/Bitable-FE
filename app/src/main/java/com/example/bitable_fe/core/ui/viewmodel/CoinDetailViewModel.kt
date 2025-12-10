@@ -10,11 +10,13 @@ import com.example.bitable_fe.core.data.repository.iface.CoinRepository
 import com.example.bitable_fe.core.network.response.CandleResponse
 import com.example.bitable_fe.core.ui.state.CoinDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 @HiltViewModel
 class CoinDetailViewModel @Inject constructor(
@@ -22,33 +24,47 @@ class CoinDetailViewModel @Inject constructor(
     private val chartRepo: ChartRepository
 ) : ViewModel() {
 
-    var period by mutableIntStateOf(0)
-        private set
-
     private val _tickerState = MutableStateFlow<CoinDetailState>(CoinDetailState.Loading)
     val tickerState = _tickerState.asStateFlow()
 
     private val _chartState = MutableStateFlow<List<CandleResponse>>(emptyList())
     val chartState = _chartState.asStateFlow()
 
-    private var currentSymbol: String = ""
-    private val _chartAnalysis = MutableStateFlow<String>("")
+    private val _dailyStats = MutableStateFlow<DailyStats?>(null)
+    val dailyStats = _dailyStats.asStateFlow()
+
+    private val _chartAnalysis = MutableStateFlow("")
     val chartAnalysis = _chartAnalysis.asStateFlow()
 
+    var period by mutableIntStateOf(0)
+        private set
+
+    private var currentSymbol: String = ""
+
+    /** 🔥 실시간 ticker job */
+    private var tickerJob: Job? = null
+
+
+    /** -------------------------
+     *  기간 탭 변경
+     *  ------------------------- */
     fun setPeriodTab(idx: Int) {
         period = idx
         loadChart(currentSymbol)
     }
+
+
+    /** -------------------------
+     *  TTS 차트 분석 요청
+     *  ------------------------- */
     fun loadChartAnalysis(userId: Long = 1L) {
         viewModelScope.launch {
             val interval = when (period) {
-                0 -> "1d"
-                1 -> "1w"
-                2 -> "1m"
-                3 -> "5m"
-                4 -> "30m"
-                5 -> "1h"
-                6 -> "4h"
+                0 -> "1m"
+                1 -> "1d"
+                2 -> "1w"
+                3 -> "1M"
+                4 -> "1Y"
                 else -> "1d"
             }
 
@@ -63,6 +79,11 @@ class CoinDetailViewModel @Inject constructor(
             }
         }
     }
+
+
+    /** -------------------------
+     *  티커 최초 로드
+     *  ------------------------- */
     fun loadTicker(symbol: String) {
         currentSymbol = symbol
 
@@ -70,37 +91,105 @@ class CoinDetailViewModel @Inject constructor(
             _tickerState.value = CoinDetailState.Loading
 
             runCatching { repo.getTicker(symbol) }
-                .onSuccess { data ->
-                    _tickerState.value = CoinDetailState.Success(data)
-                    loadChart(symbol)   // 🎯 티커 로드 후 차트도 함께 로드!
+                .onSuccess { ticker ->
+                    _tickerState.value = CoinDetailState.Success(ticker)
+
+                    loadChart(symbol)        // 차트 로드
+                    startRealTimeTicker(symbol) // ★ 실시간 티커 시작
                 }
                 .onFailure {
                     _tickerState.value = CoinDetailState.Error(it.message ?: "Unknown error")
                 }
         }
     }
+    fun clearChartAnalysis() {
+        _chartAnalysis.value = ""
+    }
 
-    // ---------------------------------------------------------
-    // 🔥 차트 로딩
-    // ---------------------------------------------------------
+    /** -------------------------
+     *  실시간 티커 폴링 시작
+     *  ------------------------- */
+    private fun startRealTimeTicker(symbol: String) {
+        // 기존 job이 돌고 있으면 중지
+        tickerJob?.cancel()
+
+        tickerJob = viewModelScope.launch {
+            while (isActive) {
+                delay(3000)
+
+                runCatching { repo.getTicker(symbol) }
+                    .onSuccess { ticker ->
+                        _tickerState.value = CoinDetailState.Success(ticker)
+                        recalcDailyStats()  // ★ real-time 반영
+                    }
+            }
+        }
+    }
+
+
+    /** -------------------------
+     *  실시간 ticker 중단 (화면 벗어날 때)
+     *  ------------------------- */
+    fun stopRealTimeTicker() {
+        tickerJob?.cancel()
+        tickerJob = null
+    }
+
+
+    /** -------------------------
+     *  차트 로드 (기간 탭별)
+     *  ------------------------- */
     private fun loadChart(symbol: String) {
         if (symbol.isBlank()) return
 
         viewModelScope.launch {
-            val market = symbol // 예: "KRW-BTC"
-
-            val response = when (period) {
-                0 -> chartRepo.getDayCandles(market, 60)      // 1일
-                1 -> chartRepo.getWeekCandles(market, 60)     // 1주
-                2 -> chartRepo.getDayCandles(market, 120)     // 1개월 (일봉 120개)
-                3 -> chartRepo.getMinuteCandles(5, market, 200)   // 5분봉
-                4 -> chartRepo.getMinuteCandles(30, market, 200)  // 30분봉
-                5 -> chartRepo.getMinuteCandles(60, market, 200)  // 1시간봉
-                6 -> chartRepo.getMinuteCandles(240, market, 200) // 4시간봉
-                else -> chartRepo.getDayCandles(market, 60)
+            val resp = when (period) {
+                0 -> chartRepo.getMinuteCandles(1, symbol, 200)
+                1 -> chartRepo.getDayCandles(symbol, 60)
+                2 -> chartRepo.getWeekCandles(symbol, 60)
+                3 -> chartRepo.getDayCandles(symbol, 120)
+                4 -> chartRepo.getDayCandles(symbol, 365)
+                else -> chartRepo.getDayCandles(symbol, 60)
             }
 
-            _chartState.value = response.data ?: emptyList()
+            _chartState.value = resp.data ?: emptyList()
+            recalcDailyStats() // ★ 차트 바뀌면 변동률 업데이트
         }
     }
+
+
+    /** -------------------------
+     *  변동률 계산
+     *  ------------------------- */
+    private fun recalcDailyStats() {
+        val candles = _chartState.value
+        if (candles.size < 2) return
+
+        val prev = candles[candles.size - 2]   // 어제 종가 등
+        val today = candles.last()             // 오늘
+
+        val prevClose = prev.trade_price ?: return
+        val trade = today.trade_price ?: return
+        val high = today.high_price ?: return
+        val low = today.low_price ?: return
+
+        _dailyStats.value = DailyStats(
+            changeRate = ((trade - prevClose) / prevClose) * 100,
+            highRate = ((high - prevClose) / prevClose) * 100,
+            lowRate = ((low - prevClose) / prevClose) * 100
+        )
+    }
+
+
+    override fun onCleared() {
+        super.onCleared()
+        stopRealTimeTicker()
+    }
 }
+
+
+data class DailyStats(
+    val changeRate: Double,
+    val highRate: Double,
+    val lowRate: Double
+)

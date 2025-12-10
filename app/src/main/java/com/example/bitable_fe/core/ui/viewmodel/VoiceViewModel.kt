@@ -54,4 +54,8 @@ class VoiceViewModel @Inject constructor(
                 .onFailure { _state.value = VoiceUiState.Error(it.message ?: "") }
         }
     }
+
+    fun clearState() {
+        _state.value = VoiceUiState.Idle
+    }
 }

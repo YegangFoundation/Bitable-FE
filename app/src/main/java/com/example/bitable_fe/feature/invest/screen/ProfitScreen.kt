@@ -178,6 +178,8 @@ fun ProfitScreen(
             is VoiceUiState.Success -> {
                 val audio = (voiceState as VoiceUiState.Success).data as ByteArray
                 AudioPlayerUtil.playByteArray(audio)
+
+                voiceVm.clearState()
             }
             else -> Unit
         }

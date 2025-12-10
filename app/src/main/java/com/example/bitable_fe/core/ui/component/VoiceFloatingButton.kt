@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,21 +21,24 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.bitable_fe.core.ui.viewmodel.UserPreferencesViewModel
 import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import java.io.File
 
 @Composable
 fun VoiceFloatingButton(
     viewModel: VoiceViewModel = hiltViewModel(),
-    userId: Long = 1L
+    preferencesViewModel: UserPreferencesViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     var isRecording by remember { mutableStateOf(false) }
     var recorder by remember { mutableStateOf<VoiceRecorder?>(null) }
     var audioFile by remember { mutableStateOf<File?>(null) }
+    val userId by preferencesViewModel.userIdFlow.collectAsState(initial = -1L)
 
     FloatingActionButton(
         onClick = {
+            if (userId == -1L) return@FloatingActionButton
             val permission = Manifest.permission.RECORD_AUDIO
 
             // 1️⃣ 권한 체크
@@ -79,12 +84,13 @@ fun VoiceFloatingButton(
                 // cleanup
                 recorder = null
 
-                val toast = Toast.makeText(context, "작업 완료", 3)
-                toast.show()
+                Toast.makeText(context, "주문 체결 완료", Toast.LENGTH_SHORT).show()
+                viewModel.tts("주문 체결이 완료되었습니다.")
             }
         },
         containerColor = if (isRecording) Color.Red else Color(0xFF006AFF),
-        shape = CircleShape
+        shape = CircleShape,
+
     ) {
         Icon(
             imageVector = Icons.Default.Mic,

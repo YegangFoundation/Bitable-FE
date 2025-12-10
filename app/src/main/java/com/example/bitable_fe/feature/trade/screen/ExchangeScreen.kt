@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,13 +38,29 @@ fun ExchangeScreen(
     coinViewModel: CoinViewModel = hiltViewModel()
 ) {
     val uiState by coinViewModel.state.collectAsState()
-    var selectedTab by remember { mutableIntStateOf(0) } // ← Tab 상태 추가
+    val tickers by coinViewModel.tickers.collectAsState()
+
+    var selectedTab by remember { mutableIntStateOf(0) }
     var keyword by remember { mutableStateOf("") }
 
+    // 최초 1회: 마켓 목록 로드
     LaunchedEffect(Unit) {
         coinViewModel.getAllMarkets()
     }
 
+    // 마켓 목록을 불러왔다면 → 실시간 ticker 시작
+    LaunchedEffect(uiState) {
+        if (uiState is CoinUiState.Success<*>) {
+            val markets = (uiState as CoinUiState.Success<List<MarketData>>).data
+            val symbols = markets.map { it.market }
+            coinViewModel.startRealTimeTicker(symbols)
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            coinViewModel.stopRealTimeTicker()
+        }
+    }
     Scaffold(
         topBar = { ExchangeTopBar() },
         bottomBar = {
@@ -62,13 +79,14 @@ fun ExchangeScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
+
             SearchBar(
                 text = keyword,
                 onTextChange = { keyword = it }
             )
+
             Spacer(Modifier.height(12.dp))
 
-            // 🔥 이제 선택을 상위에서 관리한다!
             MarketTabRow(
                 selectedTabIndex = selectedTab,
                 onTabSelected = { selectedTab = it }
@@ -77,13 +95,10 @@ fun ExchangeScreen(
             Spacer(Modifier.height(12.dp))
 
             when (uiState) {
-                is CoinUiState.Loading -> {
-                    Text("로딩 중…")
-                }
+                is CoinUiState.Loading -> Text("로딩 중…")
 
-                is CoinUiState.Error -> {
+                is CoinUiState.Error ->
                     Text("에러: ${(uiState as CoinUiState.Error).msg}")
-                }
 
                 is CoinUiState.Success -> {
                     val markets = (uiState as CoinUiState.Success<List<MarketData>>).data
@@ -92,18 +107,25 @@ fun ExchangeScreen(
                         0 -> markets.filter { it.market.startsWith("KRW-") }
                         1 -> markets.filter { it.market.startsWith("BTC-") }
                         2 -> markets.filter { it.market.startsWith("USDT-") }
-                        3 -> emptyList() // 관심 코인 (추후 구현)
                         else -> markets
                     }
+
                     val searched = filtered.filter { item ->
                         val name = item.koreanName
                         val symbol = item.market.replace("-", "")
-
                         name.contains(keyword, ignoreCase = true) ||
                                 symbol.contains(keyword, ignoreCase = true)
                     }
 
-                    CoinList(items = searched, onItemClick = onCoinClick)
+                    // ❗ 여기서 tickerFlow 값을 리스트 항목에 병합한다
+                    val merged = searched.map { item ->
+                        tickers[item.market] ?: item // ticker가 있으면 교체
+                    }
+
+                    CoinList(
+                        items = merged,
+                        onItemClick = onCoinClick
+                    )
                 }
 
                 else -> {}
@@ -111,6 +133,7 @@ fun ExchangeScreen(
         }
     }
 }
+
 
 
 

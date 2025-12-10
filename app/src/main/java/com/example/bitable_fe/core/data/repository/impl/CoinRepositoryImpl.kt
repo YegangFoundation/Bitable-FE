@@ -29,4 +29,5 @@ class CoinRepositoryImpl @Inject constructor(
     override suspend fun initialize() {
         api.initializeCoins()
     }
+
 }
