@@ -17,6 +17,9 @@ class VoiceRepositoryImpl @Inject constructor(
     override suspend fun uploadAudio(userId: Long, audio: MultipartBody.Part): VoiceCommandResponse =
         api.processAudioCommand(userId, audio).data!!
 
-    override suspend fun tts(text: String): List<String> =
-        api.tts(mapOf("text" to text))
+    override suspend fun tts(text: String): ByteArray {
+        val response = api.tts(mapOf("text" to text))
+        return response.bytes()
+    }
+
 }

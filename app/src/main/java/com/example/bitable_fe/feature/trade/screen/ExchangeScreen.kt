@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ fun ExchangeScreen(
 ) {
     val uiState by coinViewModel.state.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) } // ← Tab 상태 추가
+    var keyword by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         coinViewModel.getAllMarkets()
@@ -60,7 +62,10 @@ fun ExchangeScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            SearchBar()
+            SearchBar(
+                text = keyword,
+                onTextChange = { keyword = it }
+            )
             Spacer(Modifier.height(12.dp))
 
             // 🔥 이제 선택을 상위에서 관리한다!
@@ -90,8 +95,15 @@ fun ExchangeScreen(
                         3 -> emptyList() // 관심 코인 (추후 구현)
                         else -> markets
                     }
+                    val searched = filtered.filter { item ->
+                        val name = item.koreanName
+                        val symbol = item.market.replace("-", "")
 
-                    CoinList(items = filtered, onItemClick = onCoinClick)
+                        name.contains(keyword, ignoreCase = true) ||
+                                symbol.contains(keyword, ignoreCase = true)
+                    }
+
+                    CoinList(items = searched, onItemClick = onCoinClick)
                 }
 
                 else -> {}

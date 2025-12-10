@@ -49,6 +49,11 @@ fun CoinDetailScreen(
     LaunchedEffect(coinName) {
         coinDetailViewModel.loadTicker(coinName)
     }
+    LaunchedEffect(chartAnalysis) {
+        if (chartAnalysis.isNotBlank()) {
+            voiceVm.tts(chartAnalysis)
+        }
+    }
 
     val uiState by coinDetailViewModel.tickerState.collectAsState()
 
@@ -150,10 +155,6 @@ fun CoinDetailScreen(
                         Button(
                             onClick = {
                                 coinDetailViewModel.loadChartAnalysis()
-
-                                if (chartAnalysis.isNotBlank()) {
-                                    voiceVm.tts(chartAnalysis)
-                                }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(Color(0xFF006AFF)),

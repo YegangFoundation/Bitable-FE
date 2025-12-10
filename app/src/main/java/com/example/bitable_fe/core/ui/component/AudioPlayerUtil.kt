@@ -14,12 +14,12 @@ object AudioPlayerUtil {
 
         player = MediaPlayer().apply {
             setDataSource(temp.absolutePath)
-            prepare()
+            setOnPreparedListener { start() }
             setOnCompletionListener {
                 onComplete()
                 stop()
             }
-            start()
+            prepareAsync()   // 🔥 중요
         }
     }
 

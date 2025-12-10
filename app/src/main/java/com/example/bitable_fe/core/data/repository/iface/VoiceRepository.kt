@@ -7,5 +7,5 @@ import okhttp3.MultipartBody
 interface VoiceRepository {
     suspend fun processCommand(req: VoiceCommandRequest): VoiceCommandResponse
     suspend fun uploadAudio(userId: Long, audio: MultipartBody.Part): VoiceCommandResponse
-    suspend fun tts(text: String): List<String>
+    suspend fun tts(text: String): ByteArray
 }
