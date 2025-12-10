@@ -40,7 +40,6 @@ import com.example.bitable_fe.core.ui.viewmodel.VoiceViewModel
 import com.example.bitable_fe.feature.trade.screen.component.PercentSelector
 import com.example.bitable_fe.feature.trade.screen.component.TradeInputRow
 import com.example.bitable_fe.feature.trade.screen.component.TradeNumberPad
-
 @Composable
 fun SellScreen(
     symbol: String,
@@ -57,25 +56,20 @@ fun SellScreen(
     var price by remember { mutableDoubleStateOf(0.0) }
     var total by remember { mutableStateOf(0.0) }
 
-    // 🔥 사용자 계정 ID
     val accountId by userPref.userIdFlow.collectAsState(initial = -1L)
 
-    // 🔥 티커 호출
     LaunchedEffect(symbol) {
         coinDetailViewModel.loadTicker(symbol)
     }
 
-    // 🔥 가격 반영
     LaunchedEffect(uiState) {
         if (uiState is CoinDetailState.Success) {
             val ticker = (uiState as CoinDetailState.Success).data
-
             price = ticker.trade_price
             total = (amount.toDoubleOrNull() ?: 0.0) * price
         }
     }
 
-    // 🔥 주문 성공/실패 처리
     LaunchedEffect(orderState) {
         when (orderState) {
             is OrderUiState.Success -> {
@@ -102,6 +96,7 @@ fun SellScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // 🔹 타이틀 (비율 없음)
             Text(
                 text = symbol.uppercase(),
                 fontSize = 22.sp,
@@ -109,16 +104,15 @@ fun SellScreen(
                 modifier = Modifier.padding(vertical = 12.dp)
             )
 
-            // 가격 박스
+            // 🔹 가격 박스 (중간 크기 비율)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1.3f)
                     .background(Color(0xFFF6F7F9), RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
-
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
                     TradeInputRow(
                         label = "수량",
                         value = amount.ifBlank { "0" },
@@ -141,36 +135,49 @@ fun SellScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
-            PercentSelector { percent ->
-                val pct = percent.replace("%", "").toInt()
-                val calc = pct / 100.0
-                amount = calc.toString()
-                total = price * calc
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            TradeNumberPad { key ->
-                when (key) {
-                    "←" -> amount = amount.dropLast(1)
-                    "00" -> if (amount.isNotEmpty()) amount += "00"
-                    else -> amount += key
+            // 🔹 퍼센트 선택 (작은 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.7f)
+            ) {
+                PercentSelector { percent ->
+                    val pct = percent.replace("%", "").toInt()
+                    val ratio = pct / 100.0
+                    amount = ratio.toString()
+                    total = price * ratio
                 }
-                total = (amount.toDoubleOrNull() ?: 0.0) * price
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // 🔥 매도 버튼
+            // 🔹 키패드 (가장 큰 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(2.2f)
+            ) {
+                TradeNumberPad { key ->
+                    when (key) {
+                        "←" -> amount = amount.dropLast(1)
+                        "00" -> if (amount.isNotEmpty()) amount += "00"
+                        else -> amount += key
+                    }
+                    total = (amount.toDoubleOrNull() ?: 0.0) * price
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // 🔥 매도 버튼 (고정 높이)
             Button(
                 onClick = {
                     val qty = amount.toDoubleOrNull() ?: 0.0
-
-                    if (accountId != null && qty > 0) {
+                    if (qty > 0) {
                         orderViewModel.sell(
-                            accountId = accountId!!,
+                            accountId = accountId,
                             symbol = symbol,
                             quantity = qty
                         )
@@ -188,7 +195,7 @@ fun SellScreen(
                 Text("매도", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(12.dp))
         }
     }
 }

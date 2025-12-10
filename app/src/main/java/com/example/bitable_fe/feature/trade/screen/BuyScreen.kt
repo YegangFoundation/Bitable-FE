@@ -78,79 +78,70 @@ fun BuyScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // 🔥 코인명 표시
+            // 🔹 타이틀 (고정)
             Text(
                 text = symbol.uppercase(),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(vertical = 12.dp)
+                modifier = Modifier
+                    .padding(vertical = 12.dp)
             )
 
-            // 🔥 가격 입력 박스
+            // 🔹 가격 입력 박스 (적당한 비율)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1.3f)              // ⭐ 중요: 비율 분배
                     .background(Color(0xFFF6F7F9), RoundedCornerShape(16.dp))
                     .padding(16.dp)
             ) {
-
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                    // 수량
-                    TradeInputRow(
-                        label = "수량",
-                        value = amount.ifBlank { "0" },
-                        unit = symbol,
-                        bold = true
-                    )
-
-                    // 현재가
-                    TradeInputRow(
-                        label = "가격",
-                        value = String.format("%,.0f", price),
-                        unit = "KRW"
-                    )
-
-                    // 총액
-                    TradeInputRow(
-                        label = "총액",
-                        value = String.format("%,.0f", total),
-                        unit = "KRW",
-                        bold = true
-                    )
+                    TradeInputRow(label="수량", value=amount.ifBlank{"0"}, unit=symbol, bold=true)
+                    TradeInputRow(label="가격", value=String.format("%,.0f", price), unit="KRW")
+                    TradeInputRow(label="총액", value=String.format("%,.0f", total), unit="KRW", bold=true)
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // 퍼센트 선택기
-            PercentSelector { percent ->
-                val pct = percent.replace("%", "").toInt()
-                val ratio = pct / 100.0
-                amount = ratio.toString()
-                total = price * ratio
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            // 🔢 숫자 패드 입력
-            TradeNumberPad { key ->
-                when (key) {
-                    "←" -> amount = amount.dropLast(1)
-                    "00" -> if (amount.isNotEmpty()) amount += "00"
-                    else -> amount += key
+            // 🔹 퍼센트 선택 (작은 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.7f)              // ⭐ 조정 가능
+            ) {
+                PercentSelector { percent ->
+                    val pct = percent.replace("%", "").toInt()
+                    val ratio = pct / 100.0
+                    amount = ratio.toString()
+                    total = price * ratio
                 }
-
-                total = (amount.toDoubleOrNull() ?: 0.0) * price
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(8.dp))
 
-            // 🔥 매수 버튼
+            // 🔹 숫자 키패드 (가장 큰 비율)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(2.2f)              // ⭐ 키패드 영역 크게
+            ) {
+                TradeNumberPad { key ->
+                    when (key) {
+                        "←" -> amount = amount.dropLast(1)
+                        "00" -> if (amount.isNotEmpty()) amount += "00"
+                        else -> amount += key
+                    }
+                    total = (amount.toDoubleOrNull() ?: 0.0) * price
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // 🔹 매수 버튼 (고정 높이)
             Button(
                 onClick = {
                     val amountKrw = total
-
                     if (amountKrw > 0) {
                         orderViewModel.buy(
                             accountId = accountId,
@@ -171,7 +162,9 @@ fun BuyScreen(
                 Text("매수", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(12.dp))
         }
     }
+
+
 }
